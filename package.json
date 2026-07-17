@@ -31,7 +31,7 @@
   ],
   "preview": false,
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "extensionKind": [
     "ui",
@@ -114,6 +114,21 @@
       {
         "command": "peacock.refreshAutomaticColor",
         "title": "Refresh Automatic Workspace Color",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.installAgentBeacon",
+        "title": "Install Agent Beacon Hooks",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.uninstallAgentBeacon",
+        "title": "Uninstall Agent Beacon Hooks",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.showAttentionQueue",
+        "title": "Show Attention Queue",
         "category": "Better Peacock"
       },
       {
@@ -205,6 +220,15 @@
         {
           "command": "peacock.refreshAutomaticColor",
           "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "peacock.installAgentBeacon"
+        },
+        {
+          "command": "peacock.uninstallAgentBeacon"
+        },
+        {
+          "command": "peacock.showAttentionQueue"
         }
       ]
     },
@@ -213,6 +237,85 @@
     },
     "configuration": {
       "properties": {
+        "peacock.agentBeaconEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Shows Codex and Claude Code lifecycle states in the status bar and Attention Queue. Use the Install Agent Beacon Hooks command to configure supported hooks."
+        },
+        "peacock.agentBeaconNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Shows one VS Code notification when a background agent needs input, finishes, or fails. Notifications are suppressed while the window is focused."
+        },
+        "peacock.agentBeaconPollInterval": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 500,
+          "maximum": 10000,
+          "description": "Milliseconds between checks for local Agent Beacon hook events."
+        },
+        "peacock.agentBeaconStaleMinutes": {
+          "type": "number",
+          "default": 480,
+          "minimum": 1,
+          "maximum": 1440,
+          "description": "Minutes before an Agent Beacon event is removed from the Attention Queue."
+        },
+        "peacock.gitRiskEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Shows a compact status item for conflicts, dirty files, and significant ahead or behind counts. The item stays hidden for a clean repository."
+        },
+        "peacock.gitRiskAheadBehindThreshold": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Minimum ahead or behind count shown by the Git Risk indicator."
+        },
+        "peacock.environmentGuardrails": {
+          "type": "array",
+          "default": [],
+          "description": "Optional, explicit environment warnings. Rules match workspace names or paths, remote authorities, branches, or Git remotes; no environments are inferred automatically.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "pattern"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Short label such as Production or Staging."
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Case-insensitive glob pattern, for example *prod* or ssh-remote+production-* ."
+              },
+              "target": {
+                "type": "string",
+                "default": "any",
+                "enum": [
+                  "any",
+                  "workspace",
+                  "remote",
+                  "branch",
+                  "gitRemote"
+                ],
+                "description": "Environment identity field to test."
+              },
+              "severity": {
+                "type": "string",
+                "default": "warning",
+                "enum": [
+                  "warning",
+                  "error"
+                ],
+                "description": "Accessible status-bar emphasis used for the warning."
+              }
+            }
+          }
+        },
         "peacock.squigglyBeGone": {
           "type": "boolean",
           "default": false,

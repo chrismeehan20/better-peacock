@@ -68,6 +68,38 @@ Run **Better Peacock: Enable Automatic Workspace Color**, then optionally add pr
 
 See the [guide](docs/guide/README.md#automatic-colors) for source priority and all settings.
 
+## Agent Beacon and Attention Queue
+
+Agent Beacon turns supported Codex and Claude Code lifecycle hooks into a compact VS Code status item:
+
+- working
+- needs input or permission
+- ready for review
+- failed
+
+Run **Better Peacock: Install Agent Beacon Hooks**, choose Codex, Claude Code, or both, and confirm the explicit configuration change. Better Peacock backs up existing hook files before merging its handlers. Codex asks you to review and trust new hooks with `/hooks`.
+
+Run **Better Peacock: Show Attention Queue** from any VS Code window to list projects that need input, are ready, or failed. Selecting another project opens it in a new VS Code window. Agent Beacon writes state-only JSON to the operating system's temporary directory; it does not read or copy conversation transcripts.
+
+## Git Risk and Environment Guardrails
+
+Git Risk is enabled by default and stays hidden for clean repositories. It shows compact counts for conflicts, dirty files, unpushed commits, and significant behind counts; click it to open Source Control.
+
+Environment Guardrails are opt-in and never infer that an environment is production. Configure explicit, case-insensitive glob rules when desired:
+
+```json
+{
+  "peacock.environmentGuardrails": [
+    {
+      "name": "Production",
+      "pattern": "*production*",
+      "target": "remote",
+      "severity": "error"
+    }
+  ]
+}
+```
+
 ## Resources
 
 - [Better Peacock guide](docs/guide/README.md)

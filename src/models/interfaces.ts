@@ -15,6 +15,15 @@ export interface ICommand {
   category: string;
 }
 
+export type EnvironmentGuardrailTarget = 'any' | 'workspace' | 'remote' | 'branch' | 'gitRemote';
+
+export interface IEnvironmentGuardrail {
+  name: string;
+  pattern: string;
+  target?: EnvironmentGuardrailTarget;
+  severity?: 'warning' | 'error';
+}
+
 export interface IConfiguration {
   type: string;
   title: string;

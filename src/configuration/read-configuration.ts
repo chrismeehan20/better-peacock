@@ -19,6 +19,7 @@ import {
   ForegroundColors,
   defaultAmountToDarkenLighten,
   ColorSource,
+  IEnvironmentGuardrail,
 } from '../models';
 import {
   getAdjustedColorHex,
@@ -36,6 +37,34 @@ const { workspace } = vscode;
 
 export type AutomaticColorSource = 'projectIcon' | 'gitRemote' | 'workspace';
 export type AutomaticColorMode = 'off' | 'auto' | AutomaticColorSource;
+
+export function getAgentBeaconEnabled() {
+  return readConfiguration<boolean>(StandardSettings.AgentBeaconEnabled, false);
+}
+
+export function getAgentBeaconNotifications() {
+  return readConfiguration<boolean>(StandardSettings.AgentBeaconNotifications, true);
+}
+
+export function getAgentBeaconPollInterval() {
+  return readConfiguration<number>(StandardSettings.AgentBeaconPollInterval, 1000);
+}
+
+export function getAgentBeaconStaleMinutes() {
+  return readConfiguration<number>(StandardSettings.AgentBeaconStaleMinutes, 480);
+}
+
+export function getGitRiskEnabled() {
+  return readConfiguration<boolean>(StandardSettings.GitRiskEnabled, true);
+}
+
+export function getGitRiskAheadBehindThreshold() {
+  return readConfiguration<number>(StandardSettings.GitRiskAheadBehindThreshold, 1);
+}
+
+export function getEnvironmentGuardrails() {
+  return readConfiguration<IEnvironmentGuardrail[]>(StandardSettings.EnvironmentGuardrails, []);
+}
 
 export function getSurpriseMeFromFavoritesOnly() {
   return readConfiguration<boolean>(StandardSettings.SurpriseMeFromFavoritesOnly, false);

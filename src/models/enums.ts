@@ -1,6 +1,10 @@
 import { LiveShareSettings } from '../live-share';
 
 export enum StandardSettings {
+  AgentBeaconEnabled = 'agentBeaconEnabled',
+  AgentBeaconNotifications = 'agentBeaconNotifications',
+  AgentBeaconPollInterval = 'agentBeaconPollInterval',
+  AgentBeaconStaleMinutes = 'agentBeaconStaleMinutes',
   AutoColorMode = 'autoColorMode',
   AutoColorPriority = 'autoColorPriority',
   BranchColors = 'branchColors',
@@ -9,11 +13,14 @@ export enum StandardSettings {
   DarkenLightenPercentage = 'darkenLightenPercentage',
   DarkForegroundColor = 'darkForegroundColor',
   ElementAdjustments = 'elementAdjustments',
+  EnvironmentGuardrails = 'environmentGuardrails',
   FavoriteColors = 'favoriteColors',
   KeepBadgeColor = 'keepBadgeColor',
   KeepForegroundColor = 'keepForegroundColor',
   LightForegroundColor = 'lightForegroundColor',
   GitRemoteName = 'gitRemoteName',
+  GitRiskAheadBehindThreshold = 'gitRiskAheadBehindThreshold',
+  GitRiskEnabled = 'gitRiskEnabled',
   ProjectIconMaxSize = 'projectIconMaxSize',
   ProjectIconPaletteStrategy = 'projectIconPaletteStrategy',
   ProjectIconPath = 'projectIconPath',
@@ -49,13 +56,16 @@ export enum Commands {
   enterColor = 'peacock.enterColor',
   enableAutomaticColor = 'peacock.enableAutomaticColor',
   disableAutomaticColor = 'peacock.disableAutomaticColor',
+  installAgentBeacon = 'peacock.installAgentBeacon',
   lighten = 'peacock.lighten',
   removeAllColors = 'peacock.removeAllColors',
   resetWorkspaceColors = 'peacock.resetWorkspaceColors',
   refreshAutomaticColor = 'peacock.refreshAutomaticColor',
   saveColorToFavorites = 'peacock.saveColorToFavorites',
   showAndCopyCurrentColor = 'peacock.showAndCopyCurrentColor',
+  showAttentionQueue = 'peacock.showAttentionQueue',
   showDocumentation = 'peacock.docs',
+  uninstallAgentBeacon = 'peacock.uninstallAgentBeacon',
 }
 
 export enum ElementNames {

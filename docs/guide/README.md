@@ -38,6 +38,9 @@ Commands can be found in the command palette. Look for commands beginning with "
 - Can automatically derive stable colors from a project icon, Git remote, or workspace identity.
 - Can warn when you switch to protected branches by overriding the status bar color.
 - Uses a concise `Repository [VS Code]` native window title so projects are easier to identify in macOS Mission Control and other system window views.
+- Can show supported Codex and Claude Code states and aggregate projects needing attention across VS Code windows.
+- Shows compact Git risk while remaining hidden for clean repositories.
+- Supports explicit environment warning rules without guessing which environments are sensitive.
 
 ## Settings
 
@@ -75,6 +78,13 @@ Commands can be found in the command palette. Look for commands beginning with "
 | peacock.projectIconPaletteStrategy  | dominant, vibrant, muted, or pastel image treatment                                                                 |
 | peacock.branchColors                | Exact branch names or glob patterns mapped to warning colors                                                        |
 | peacock.colorBranchStatusItem       | Shows the branch with a deterministic foreground color in Peacock's status item                                     |
+| peacock.agentBeaconEnabled          | Enables local, hook-driven Codex and Claude Code status monitoring                                                   |
+| peacock.agentBeaconNotifications    | Notifies once for background input, ready, and failed transitions                                                    |
+| peacock.agentBeaconPollInterval     | Local Agent Beacon state check interval in milliseconds                                                             |
+| peacock.agentBeaconStaleMinutes     | Removes old states from the Attention Queue                                                                          |
+| peacock.gitRiskEnabled              | Shows conflicts, dirty files, and ahead/behind risk; hidden when clean                                               |
+| peacock.gitRiskAheadBehindThreshold | Minimum ahead or behind count shown                                                                                   |
+| peacock.environmentGuardrails       | Explicit glob rules for workspace, remote, branch, or Git-remote warnings                                            |
 
 ### Automatic Colors
 
@@ -103,6 +113,60 @@ Use `peacock.branchColors` for a full status-bar warning on protected or otherwi
 ```
 
 The branch warning changes only the status bar; the project color remains on the title and activity bars. The status item also displays the current branch and can use a deterministic branch foreground color.
+
+### Agent Beacon
+
+Run **Better Peacock: Install Agent Beacon Hooks** and choose Codex, Claude Code, or both. The command:
+
+1. asks for explicit confirmation;
+2. installs a small state-only helper under `~/.better-peacock`;
+3. backs up an existing `~/.codex/hooks.json` or `~/.claude/settings.json`;
+4. merges handlers for supported prompt, permission, notification, stop, and failure events; and
+5. enables `peacock.agentBeaconEnabled` globally.
+
+The helper records only the provider, lifecycle state, workspace path, event name, session ID, optional notification message, and timestamp. It never reads conversation transcripts or project files. Hook errors exit successfully so Agent Beacon cannot block an agent turn.
+
+Codex requires reviewing and trusting new hook definitions with `/hooks`. Restart active Codex or Claude Code sessions after installation. Use **Better Peacock: Uninstall Agent Beacon Hooks** to surgically remove Better Peacock handlers while preserving other hooks and settings.
+
+### Attention Queue
+
+Run **Better Peacock: Show Attention Queue** in the Command Palette from any VS Code window. The quick-pick reads the shared local state directory and lists projects whose agent needs input, is ready, or failed. Selecting a project opens it in a new VS Code window. Running agents are summarized only when nothing needs attention.
+
+### Git Risk
+
+Git Risk is enabled by default but remains hidden when the repository is clean. Its compact status item can show:
+
+- conflicts with an accessible error background;
+- staged and unstaged change counts;
+- unpushed commits (`↑`); and
+- commits behind upstream (`↓`).
+
+Click the item to open Source Control. Use `peacock.gitRiskAheadBehindThreshold` to suppress insignificant ahead or behind counts.
+
+### Environment Guardrails
+
+Environment Guardrails are intentionally empty by default. Better Peacock does not guess that a branch, SSH host, or workspace is production. Add explicit case-insensitive glob rules when your workflow benefits from a persistent warning:
+
+```json
+{
+  "peacock.environmentGuardrails": [
+    {
+      "name": "Production",
+      "pattern": "*production*",
+      "target": "remote",
+      "severity": "error"
+    },
+    {
+      "name": "Release Branch",
+      "pattern": "release/*",
+      "target": "branch",
+      "severity": "warning"
+    }
+  ]
+}
+```
+
+Targets can be `any`, `workspace`, `remote`, `branch`, or `gitRemote`. A matching rule adds a short shield item without changing the durable repository color.
 
 ### Favorite Colors
 
@@ -208,6 +272,9 @@ There are key bindings for the lighten command `alt+cmd+=` and for darken comman
 | Better Peacock: Enable Automatic Workspace Color       | Enables automatic source fallback in this workspace                                                                                |
 | Better Peacock: Disable Automatic Workspace Color      | Disables automatic source fallback in this workspace                                                                               |
 | Better Peacock: Refresh Automatic Workspace Color      | Re-runs icon, Git remote, workspace, and protected-branch detection                                                                |
+| Better Peacock: Install Agent Beacon Hooks              | Backs up and merges supported Codex and Claude Code lifecycle hooks                                                                |
+| Better Peacock: Uninstall Agent Beacon Hooks            | Removes Better Peacock hook handlers while preserving other configuration                                                         |
+| Better Peacock: Show Attention Queue                    | Lists projects whose supported coding agent needs attention or is ready                                                            |
 
 ## Keyboard Shortcuts
 

@@ -39,6 +39,9 @@ import {
   initializeAutomaticColor,
   refreshAutomaticColor,
 } from './automatic-color';
+import { initializeAgentBeacon } from './agent-beacon';
+import { initializeEnvironmentGuardrails } from './environment-guardrails';
+import { initializeGitRisk } from './git-risk';
 
 const { commands, workspace } = vscode;
 
@@ -48,6 +51,7 @@ export async function activate(context: vscode.ExtensionContext) {
   Logger.info(getMementos(), true, 'Better Peacock Mementos');
 
   registerCommands();
+  initializeAgentBeacon(context);
   await initializeTheStarterSetOfFavorites();
 
   if (workspace.workspaceFolders) {
@@ -60,6 +64,8 @@ export async function activate(context: vscode.ExtensionContext) {
     await checkSurpriseMeOnStartupLogic();
     await addRemoteIntegration(State.extensionContext);
     await initializeAutomaticColor(State.extensionContext);
+    await initializeGitRisk(State.extensionContext);
+    await initializeEnvironmentGuardrails(State.extensionContext);
     await addLiveShareIntegration(State.extensionContext);
   } else {
     Logger.info('Better Peacock is not in a workspace, so its functionality is unavailable.');

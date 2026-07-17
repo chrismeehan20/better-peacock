@@ -1,0 +1,329 @@
+import * as vscode from 'vscode';
+import {
+  getAgentBeaconEnabled,
+  getAgentBeaconNotifications,
+  getAgentBeaconPollInterval,
+  getAgentBeaconStaleMinutes,
+} from '../configuration';
+import { Commands, StandardSettings } from '../models';
+import { installAgentBeaconHooks, uninstallAgentBeaconHooks } from './setup';
+import { AgentBeaconState, AgentBeaconStateName } from './types';
+
+let statusBarItem: vscode.StatusBarItem | undefined;
+let pollHandle: NodeJS.Timeout | undefined;
+let pollInProgress = false;
+let lastNotificationKey = '';
+
+const statePriority: { [state in AgentBeaconStateName]: number } = {
+  'needs-input': 4,
+  failed: 3,
+  ready: 2,
+  running: 1,
+};
+
+function getStateDirectoryUri() {
+  if (vscode.env.uiKind === vscode.UIKind.Web) {
+    return undefined;
+  }
+  const temporaryDirectory = process.env.TMPDIR || process.env.TEMP || process.env.TMP || '/tmp';
+  return vscode.Uri.joinPath(vscode.Uri.file(temporaryDirectory), 'better-peacock-agent-beacon');
+}
+
+function decode(value: Uint8Array) {
+  return Buffer.from(value).toString('utf8');
+}
+
+function isFileNotFound(error: unknown) {
+  return /FileNotFound|ENOENT/i.test(String(error));
+}
+
+function isAgentBeaconState(value: any): value is AgentBeaconState {
+  return (
+    value &&
+    value.version === 1 &&
+    (value.provider === 'codex' || value.provider === 'claude') &&
+    ['running', 'needs-input', 'ready', 'failed'].includes(value.state) &&
+    typeof value.workspace === 'string' &&
+    typeof value.timestamp === 'number'
+  );
+}
+
+export async function readAgentBeaconStates() {
+  const directory = getStateDirectoryUri();
+  if (!directory) {
+    return [] as AgentBeaconState[];
+  }
+  let entries: [string, vscode.FileType][];
+  try {
+    entries = await vscode.workspace.fs.readDirectory(directory);
+  } catch (error) {
+    if (isFileNotFound(error)) {
+      return [] as AgentBeaconState[];
+    }
+    throw error;
+  }
+
+  const staleAfter = getAgentBeaconStaleMinutes() * 60 * 1000;
+  const states: AgentBeaconState[] = [];
+  for (const [name, type] of entries) {
+    if (type !== vscode.FileType.File || !name.endsWith('.json')) {
+      continue;
+    }
+    const uri = vscode.Uri.joinPath(directory, name);
+    try {
+      const parsed = JSON.parse(decode(await vscode.workspace.fs.readFile(uri)));
+      if (!isAgentBeaconState(parsed)) {
+        continue;
+      }
+      if (Date.now() - parsed.timestamp > staleAfter) {
+        await vscode.workspace.fs.delete(uri);
+        continue;
+      }
+      states.push({ ...parsed, sourceUri: uri.toString() });
+    } catch {
+      // A hook may be replacing a state file while it is being scanned.
+    }
+  }
+  return states;
+}
+
+function normalizePath(value: string) {
+  const normalized = value.replace(/\\/g, '/').replace(/\/$/, '');
+  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
+}
+
+function stateBelongsToWorkspace(state: AgentBeaconState, workspacePath: string) {
+  const statePath = normalizePath(state.workspace);
+  const rootPath = normalizePath(workspacePath);
+  return (
+    statePath === rootPath ||
+    statePath.startsWith(`${rootPath}/`) ||
+    rootPath.startsWith(`${statePath}/`)
+  );
+}
+
+export function selectPrimaryAgentState(states: AgentBeaconState[], workspacePaths: string[]) {
+  return states
+    .filter(state => workspacePaths.some(root => stateBelongsToWorkspace(state, root)))
+    .sort(
+      (left, right) =>
+        statePriority[right.state] - statePriority[left.state] || right.timestamp - left.timestamp,
+    )[0];
+}
+
+function providerLabel(state: AgentBeaconState) {
+  return state.provider === 'claude' ? 'Claude' : 'Codex';
+}
+
+function statePresentation(state: AgentBeaconState) {
+  const provider = providerLabel(state);
+  switch (state.state) {
+    case 'running':
+      return { text: `$(sync~spin) ${provider} working`, description: 'Working' };
+    case 'needs-input':
+      return {
+        text: `$(bell) ${provider} needs input`,
+        description: 'Needs input',
+        background: new vscode.ThemeColor('statusBarItem.warningBackground'),
+      };
+    case 'ready':
+      return { text: `$(pass-filled) ${provider} ready`, description: 'Ready', color: '#2ea043' };
+    case 'failed':
+      return {
+        text: `$(error) ${provider} failed`,
+        description: 'Failed',
+        background: new vscode.ThemeColor('statusBarItem.errorBackground'),
+      };
+  }
+}
+
+function updateStatusBar(state: AgentBeaconState | undefined) {
+  if (!statusBarItem) {
+    return;
+  }
+  if (!getAgentBeaconEnabled() || !state) {
+    statusBarItem.hide();
+    return;
+  }
+  const presentation = statePresentation(state);
+  statusBarItem.text = presentation.text;
+  statusBarItem.color = presentation.color;
+  statusBarItem.backgroundColor = presentation.background;
+  statusBarItem.command = Commands.showAttentionQueue;
+  statusBarItem.tooltip = [
+    `Agent Beacon: ${presentation.description}`,
+    `Provider: ${providerLabel(state)}`,
+    `Workspace: ${state.workspace}`,
+    state.message ? `Message: ${state.message}` : '',
+    'Click to show the Attention Queue',
+  ]
+    .filter(Boolean)
+    .join('\n');
+  statusBarItem.show();
+}
+
+async function notifyForTransition(state: AgentBeaconState | undefined) {
+  if (
+    !state ||
+    state.state === 'running' ||
+    !getAgentBeaconNotifications() ||
+    vscode.window.state.focused
+  ) {
+    return;
+  }
+  const key = `${state.provider}:${state.sessionId}:${state.state}:${state.timestamp}`;
+  if (key === lastNotificationKey) {
+    return;
+  }
+  lastNotificationKey = key;
+  if (Date.now() - state.timestamp > Math.max(10000, getAgentBeaconPollInterval() * 3)) {
+    return;
+  }
+  const presentation = statePresentation(state);
+  const choice = await vscode.window.showInformationMessage(
+    `${providerLabel(state)} ${presentation.description.toLowerCase()} in ${workspaceName(
+      state.workspace,
+    )}.`,
+    'Show Queue',
+  );
+  if (choice === 'Show Queue') {
+    await showAttentionQueue();
+  }
+}
+
+async function poll() {
+  if (pollInProgress) {
+    return;
+  }
+  pollInProgress = true;
+  try {
+    if (!getAgentBeaconEnabled()) {
+      updateStatusBar(undefined);
+      return;
+    }
+    const roots = (vscode.workspace.workspaceFolders || []).map(folder => folder.uri.fsPath);
+    const state = selectPrimaryAgentState(await readAgentBeaconStates(), roots);
+    updateStatusBar(state);
+    await notifyForTransition(state);
+  } finally {
+    pollInProgress = false;
+  }
+}
+
+function startPolling() {
+  if (pollHandle) {
+    clearInterval(pollHandle);
+    pollHandle = undefined;
+  }
+  if (!getAgentBeaconEnabled()) {
+    updateStatusBar(undefined);
+    return;
+  }
+  pollHandle = setInterval(() => poll(), Math.max(500, getAgentBeaconPollInterval()));
+  poll();
+}
+
+function workspaceName(workspacePath: string) {
+  const parts = normalizePath(workspacePath).split('/');
+  return parts[parts.length - 1] || workspacePath;
+}
+
+function relativeAge(timestamp: number) {
+  const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+  if (seconds < 60) {
+    return `${seconds}s ago`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) {
+    return `${minutes}m ago`;
+  }
+  return `${Math.floor(minutes / 60)}h ago`;
+}
+
+interface AttentionItem extends vscode.QuickPickItem {
+  state: AgentBeaconState;
+}
+
+export async function showAttentionQueue() {
+  const allStates = await readAgentBeaconStates();
+  const attentionStates = allStates
+    .filter(state => state.state !== 'running')
+    .sort(
+      (left, right) =>
+        statePriority[right.state] - statePriority[left.state] || right.timestamp - left.timestamp,
+    );
+  if (!attentionStates.length) {
+    const running = allStates.filter(state => state.state === 'running').length;
+    await vscode.window.showInformationMessage(
+      running
+        ? `No projects need attention. ${running} agent${
+            running === 1 ? ' is' : 's are'
+          } still working.`
+        : 'No Agent Beacon projects currently need attention.',
+    );
+    return;
+  }
+
+  const item = await vscode.window.showQuickPick<AttentionItem>(
+    attentionStates.map(state => {
+      const presentation = statePresentation(state);
+      return {
+        label: `${presentation.text} — ${workspaceName(state.workspace)}`,
+        description: relativeAge(state.timestamp),
+        detail: state.workspace,
+        state,
+      };
+    }),
+    {
+      placeHolder: 'Select a project to open it in VS Code',
+      matchOnDescription: true,
+      matchOnDetail: true,
+    },
+  );
+  if (item) {
+    const currentRoots = (vscode.workspace.workspaceFolders || []).map(folder => folder.uri.fsPath);
+    if (!currentRoots.some(root => stateBelongsToWorkspace(item.state, root))) {
+      await vscode.commands.executeCommand(
+        'vscode.openFolder',
+        vscode.Uri.file(item.state.workspace),
+        {
+          forceNewWindow: true,
+        },
+      );
+    }
+  }
+}
+
+export function initializeAgentBeacon(context: vscode.ExtensionContext) {
+  statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 200);
+  statusBarItem.name = 'Better Peacock Agent Beacon';
+  context.subscriptions.push(
+    statusBarItem,
+    vscode.commands.registerCommand(Commands.installAgentBeacon, () =>
+      installAgentBeaconHooks(context),
+    ),
+    vscode.commands.registerCommand(Commands.uninstallAgentBeacon, uninstallAgentBeaconHooks),
+    vscode.commands.registerCommand(Commands.showAttentionQueue, showAttentionQueue),
+    vscode.workspace.onDidChangeConfiguration(event => {
+      if (
+        event.affectsConfiguration(`peacock.${StandardSettings.AgentBeaconEnabled}`) ||
+        event.affectsConfiguration(`peacock.${StandardSettings.AgentBeaconPollInterval}`) ||
+        event.affectsConfiguration(`peacock.${StandardSettings.AgentBeaconStaleMinutes}`) ||
+        event.affectsConfiguration(`peacock.${StandardSettings.AgentBeaconNotifications}`)
+      ) {
+        startPolling();
+      }
+    }),
+    {
+      dispose: () => {
+        if (pollHandle) {
+          clearInterval(pollHandle);
+        }
+      },
+    },
+  );
+  startPolling();
+}
+
+export * from './setup';
+export * from './types';

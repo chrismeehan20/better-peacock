@@ -13,11 +13,14 @@ interface GitRemote {
   pushUrl?: string;
 }
 
-interface GitRepository {
+export interface GitRepository {
   rootUri: vscode.Uri;
   state: {
-    HEAD?: { name?: string };
+    HEAD?: { name?: string; ahead?: number; behind?: number };
     remotes: GitRemote[];
+    indexChanges?: unknown[];
+    workingTreeChanges?: unknown[];
+    mergeChanges?: unknown[];
     onDidChange: vscode.Event<void>;
   };
 }
@@ -31,7 +34,7 @@ interface GitExtension {
   getAPI(version: 1): GitApi;
 }
 
-async function getGitApi() {
+export async function getGitApi() {
   try {
     const extension = vscode.extensions.getExtension<GitExtension>('vscode.git');
     if (!extension) {
@@ -44,7 +47,7 @@ async function getGitApi() {
   }
 }
 
-function getWorkspaceRepository(repositories: GitRepository[]) {
+export function getWorkspaceRepository(repositories: GitRepository[]) {
   const folder = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0];
   if (!folder) {
     return repositories[0];
@@ -54,6 +57,11 @@ function getWorkspaceRepository(repositories: GitRepository[]) {
     repositories.find(repository => folderUri.indexOf(repository.rootUri.toString()) === 0) ||
     repositories[0]
   );
+}
+
+export async function getCurrentGitRepository() {
+  const api = await getGitApi();
+  return api && getWorkspaceRepository(api.repositories);
 }
 
 export async function getGitIdentity(remoteName: string): Promise<GitIdentity> {
@@ -107,6 +115,29 @@ export async function watchGitIdentity(context: vscode.ExtensionContext, onDidCh
     }
   };
 
+  api.repositories.forEach(watch);
+  context.subscriptions.push(
+    api.onDidOpenRepository(repository => {
+      watch(repository);
+      onDidChange();
+    }),
+  );
+}
+
+export async function watchGitState(context: vscode.ExtensionContext, onDidChange: () => void) {
+  const api = await getGitApi();
+  if (!api) {
+    return;
+  }
+  const watched: { [root: string]: boolean } = {};
+  const watch = (repository: GitRepository) => {
+    const root = repository.rootUri.toString();
+    if (watched[root]) {
+      return;
+    }
+    watched[root] = true;
+    context.subscriptions.push(repository.state.onDidChange(onDidChange));
+  };
   api.repositories.forEach(watch);
   context.subscriptions.push(
     api.onDidOpenRepository(repository => {

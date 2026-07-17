@@ -20,6 +20,10 @@ better-peacock/
 │   ├── color-library.ts        — Color manipulation utilities (uses tinycolor2)
 │   ├── configuration/          — VS Code configuration read/write helpers
 │   ├── models/                 — TypeScript interfaces, enums, constants, state
+│   ├── automatic-color/        — Project, Git remote, workspace, and branch color logic
+│   ├── agent-beacon/           — Agent hooks, state polling, and Attention Queue
+│   ├── git-risk.ts             — Dirty/conflict/ahead/behind status indicator
+│   ├── environment-guardrails.ts — Explicit environment warning rules
 │   ├── inputs.ts               — User input prompts (color picker, quick pick)
 │   ├── statusbar.ts            — Status bar color display
 │   ├── live-share/             — VS Live Share integration
