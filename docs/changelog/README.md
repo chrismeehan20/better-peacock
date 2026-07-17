@@ -2,6 +2,21 @@
 
 All notable changes to the code will be documented in this file.
 
+## Unreleased
+
+### Features
+
+- Added opt-in automatic colors derived from project icons, normalized Git remotes, or deterministic workspace identities
+- Added PNG, JPEG, SVG, and ICO project-icon color extraction with dominant, vibrant, muted, and pastel strategies
+- Added exact and glob-based branch status bar overrides for protected-branch warnings
+- Added live Git branch/remote and project-icon refresh, plus automatic-color enable, disable, and refresh commands
+- Enhanced the Peacock status item with source details, the current branch, and deterministic branch foreground colors
+
+### Tests & Documentation
+
+- Added coverage for remote normalization, deterministic hashes, branch patterns, icon palettes, and status-bar-only branch overrides
+- Documented automatic source priority, protected branch examples, and the new settings and commands
+
 ## 4.2.5
 
 ### Docs & Infrastructure

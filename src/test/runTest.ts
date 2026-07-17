@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { runTests } from 'vscode-test';
+import { runTests } from '@vscode/test-electron';
 
 import { instrument } from './coverage';
 
@@ -27,12 +27,17 @@ async function main() {
 
     // Download VS Code, unzip it and run the integration test
     await runTests({
+      // Pin a modern compatible host so extension API behavior is reproducible.
+      version: '1.85.2',
       extensionDevelopmentPath,
       extensionTestsPath,
       launchArgs: [
-        './testworkspace',
+        path.resolve(extensionDevelopmentPath, 'testworkspace'),
         '--disable-extensions',
-        // '${workspaceFolder}/testworkspace'
+        '--user-data-dir',
+        path.resolve(extensionDevelopmentPath, '.vscode-test', 'user-data'),
+        '--extensions-dir',
+        path.resolve(extensionDevelopmentPath, '.vscode-test', 'extensions'),
       ],
     });
   } catch (err) {

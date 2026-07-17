@@ -43,6 +43,30 @@ Now enjoy exploring the rest of the features explained in the docs!
 
 ![Peacock Windows](https://raw.githubusercontent.com/johnpapa/vscode-peacock/main/resources/hero.png 'Peacock windows')
 
+## Automatic Project and Branch Colors
+
+This fork adds opt-in automatic colors while preserving Peacock's manual colors, favorites, element adjustments, Remote Development, and Live Share behavior.
+
+- Derive a branded color from a PNG, JPEG, SVG, or ICO project icon
+- Derive a stable repository color from a normalized Git remote URL
+- Fall back to a deterministic workspace color
+- Override the status bar on exact or glob-matched branches such as `main`, `develop`, or `release/*`
+- Refresh when the icon, Git remote, or current branch changes
+
+Run **Peacock: Enable Automatic Workspace Color**, then optionally add protected-branch warnings:
+
+```json
+{
+  "peacock.branchColors": {
+    "main": "#d73a49",
+    "develop": "#fb8c00",
+    "release/*": "#8e44ad"
+  }
+}
+```
+
+See the [guide](https://johnpapa.github.io/vscode-peacock/#/guide/?id=automatic-colors) for source priority and all settings.
+
 ## Resources
 
 - [Peacock docs on GitHub Pages](https://johnpapa.github.io/vscode-peacock/)
@@ -54,6 +78,10 @@ Now enjoy exploring the rest of the features explained in the docs!
 ## Credits
 
 Inspiration comes in many forms. These folks and teams have contributed either through ideas, issues, pull requests, or guidance. Thank you!
+
+- Automatic workspace identity was inspired by [unique-window-colors](https://github.com/stuartcrobinson/unique-window-colors).
+- Project icon color extraction was inspired by [auto-project-colors](https://github.com/tomcwatts/auto-project-colors).
+- Normalized Git remote colors and the branch-warning request were inspired by [vscode-git-remote-color](https://github.com/jpoehnelt/vscode-git-remote-color) and [issue #5](https://github.com/jpoehnelt/vscode-git-remote-color/issues/5).
 
 - The VS Code team and their incredibly [helpful guide for creating extensions](https://code.visualstudio.com/api/get-started/your-first-extension?WT.mc_id=academic-0000-jopapa)
 

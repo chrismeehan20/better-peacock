@@ -1,6 +1,6 @@
 import * as path from 'path';
 
-import { runTests } from 'vscode-test';
+import { runTests } from '@vscode/test-electron';
 
 async function main() {
   try {
@@ -14,12 +14,15 @@ async function main() {
 
     // Download VS Code, unzip it and run the integration test
     await runTests({
+      version: '1.85.2',
       extensionDevelopmentPath,
       extensionTestsPath,
       launchArgs: [
-        './testworkspace',
-        // '--disable-extensions'
-        // '${workspaceFolder}/testworkspace'
+        path.resolve(extensionDevelopmentPath, 'testworkspace'),
+        '--user-data-dir',
+        path.resolve(extensionDevelopmentPath, '.vscode-test', 'live-share-user-data'),
+        '--extensions-dir',
+        path.resolve(extensionDevelopmentPath, '.vscode-test', 'live-share-extensions'),
       ],
     });
   } catch (err) {

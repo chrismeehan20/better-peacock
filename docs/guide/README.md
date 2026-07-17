@@ -40,6 +40,8 @@ Commands can be found in the command palette. Look for commands beginning with "
 - Saves colors to your workspace in the `.vscode/settings.json` file
 - Integrates with [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare&wt.mc_id=vscodepeacock-github-jopapa).
 - Integrates with [VS Code Remote](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack&wt.mc_id=vscodepeacock-github-jopapa).
+- Can automatically derive stable colors from a project icon, Git remote, or workspace identity.
+- Can warn when you switch to protected branches by overriding the status bar color.
 
 ## Settings
 
@@ -69,6 +71,42 @@ Commands can be found in the command palette. Look for commands beginning with "
 | peacock.vslsShareColor              | Peacock color for Live Share Color when acting as a Guest                                                           |
 | peacock.vslsJoinColor               | Peacock color for Live Share color when acting as the Host                                                          |
 | peacock.squigglyBeGone              | Easter Egg feature for FUN. Hides all error, warning, and info underlines. This setting has NO effect on your code. |
+| peacock.autoColorMode               | Automatic source: off, auto, projectIcon, gitRemote, or workspace                                                   |
+| peacock.autoColorPriority           | Ordered source fallback used by auto mode                                                                           |
+| peacock.gitRemoteName               | Git remote to normalize and hash; defaults to origin                                                                |
+| peacock.projectIconPath             | Optional workspace-relative icon path                                                                               |
+| peacock.projectIconSearchPatterns   | Ordered icon and favicon glob patterns                                                                              |
+| peacock.projectIconPaletteStrategy  | dominant, vibrant, muted, or pastel image treatment                                                                 |
+| peacock.branchColors                | Exact branch names or glob patterns mapped to warning colors                                                        |
+| peacock.colorBranchStatusItem       | Shows the branch with a deterministic foreground color in Peacock's status item                                     |
+
+### Automatic Colors
+
+Automatic colors are opt-in and never replace an explicit `peacock.color` or `peacock.remoteColor`. Run **Peacock: Enable Automatic Workspace Color**, or set `peacock.autoColorMode` in workspace settings.
+
+With `auto` mode, Peacock tries these sources in `peacock.autoColorPriority` order:
+
+1. **Project icon** — extracts the dominant color from PNG, JPEG, SVG, or ICO files and can make it vibrant, muted, or pastel.
+2. **Git remote** — normalizes HTTPS, SSH, and scp-like remote URLs before hashing, so clones of the same repository receive the same color.
+3. **Workspace identity** — hashes the workspace file or sorted workspace-folder URIs, including remote URI authorities.
+
+The color is deterministic: reopening the same project produces the same result. Peacock watches icon files, Git repositories, remotes, and branch changes and refreshes without a window reload.
+
+### Protected Branch Colors
+
+Use `peacock.branchColors` for a full status-bar warning on protected or otherwise important branches. Exact names take priority over `*` glob patterns.
+
+```json
+{
+  "peacock.branchColors": {
+    "main": "#d73a49",
+    "develop": "#fb8c00",
+    "release/*": "#8e44ad"
+  }
+}
+```
+
+The branch warning changes only the status bar; the project color remains on the title and activity bars. The status item also displays the current branch and can use a deterministic branch foreground color.
 
 ### Favorite Colors
 
@@ -171,6 +209,9 @@ There are key bindings for the lighten command `alt+cmd+=` and for darken comman
 | Peacock: Lighten                                | Lightens the current color by `darkenLightenPercentage`                                                                            |
 | Peacock: Show and Copy Current Color            | Shows the current color and copies it to the clipboard                                                                             |
 | Peacock: Show the Documentation                 | Opens the Peacock documentation web site in a browser                                                                              |
+| Peacock: Enable Automatic Workspace Color       | Enables automatic source fallback in this workspace                                                                                |
+| Peacock: Disable Automatic Workspace Color      | Disables automatic source fallback in this workspace                                                                               |
+| Peacock: Refresh Automatic Workspace Color      | Re-runs icon, Git remote, workspace, and protected-branch detection                                                                |
 
 ## Keyboard Shortcuts
 

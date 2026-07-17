@@ -7,7 +7,6 @@ import {
   StandardSettings,
   extensionShortName,
   getExtensionVersion,
-  ColorSource,
 } from './models';
 import {
   resetWorkspaceColorsHandler,
@@ -28,15 +27,18 @@ import {
   getSurpriseMeOnStartup,
   writeRecommendedFavoriteColors,
   getEnvironmentAwareColor,
-  inspectColor,
-  getCurrentColorBeforeAdjustments,
   getFavoriteColors,
 } from './configuration';
-import { applyColor, updateColorSetting } from './apply-color';
 import { Logger } from './logging';
 import { addLiveShareIntegration } from './live-share';
 import { addRemoteIntegration } from './remote';
 import { saveFavoritesVersionGlobalMemento, getMementos } from './mementos';
+import {
+  disableAutomaticColor,
+  enableAutomaticColor,
+  initializeAutomaticColor,
+  refreshAutomaticColor,
+} from './automatic-color';
 
 const { commands, workspace } = vscode;
 
@@ -56,8 +58,9 @@ export async function activate(context: vscode.ExtensionContext) {
      * This entire function will re-run when a workspace is opened.
      */
     await checkSurpriseMeOnStartupLogic();
-    await addLiveShareIntegration(State.extensionContext);
     await addRemoteIntegration(State.extensionContext);
+    await initializeAutomaticColor(State.extensionContext);
+    await addLiveShareIntegration(State.extensionContext);
   } else {
     Logger.info('Peacock is not in a workspace, so Peacock functionality is not available.');
   }
@@ -74,25 +77,11 @@ function addSubscriptions() {
 function applyPeacock(): (e: vscode.ConfigurationChangeEvent) => any {
   return async e => {
     const color = getEnvironmentAwareColor();
-    const appliedColor = getCurrentColorBeforeAdjustments();
-    if (checkIfPeacockSettingsChanged(e) && (color || appliedColor)) {
-      /**
-       * If the settings have changed
-       * AND (either we have a peacock.color/remoteColor to apply
-       *       OR we have an applied color already in the color customizations),
-       * Then we apply the "color"
-       */
+    if (checkIfPeacockSettingsChanged(e)) {
       Logger.info(
-        `${extensionShortName}: Configuration changed. Changing the color to most recently selected color: ${color}`,
+        `${extensionShortName}: Configuration changed. Refreshing manual and automatic colors: ${color}`,
       );
-      await applyColor(color);
-
-      // Only update the color in the workspace settings
-      // if there was already a workspace setting
-      const colorSource = inspectColor();
-      if (colorSource.colorSource === ColorSource.WorkspaceValue) {
-        await updateColorSetting(color);
-      }
+      await refreshAutomaticColor();
     }
   };
 }
@@ -110,6 +99,24 @@ function registerCommands() {
   commands.registerCommand(Commands.darken, darkenHandler);
   commands.registerCommand(Commands.lighten, lightenHandler);
   commands.registerCommand(Commands.showAndCopyCurrentColor, showAndCopyCurrentColorHandler);
+  commands.registerCommand(Commands.refreshAutomaticColor, async () => {
+    const state = await refreshAutomaticColor();
+    const message = state
+      ? `Peacock applied ${state.color} from ${state.sourceLabel}.`
+      : 'Peacock did not find an enabled automatic color source.';
+    await vscode.window.showInformationMessage(message);
+  });
+  commands.registerCommand(Commands.enableAutomaticColor, async () => {
+    const state = await enableAutomaticColor();
+    const message = state
+      ? `Automatic colors enabled: ${state.color} from ${state.sourceLabel}.`
+      : 'Automatic colors are enabled, but no source was found.';
+    await vscode.window.showInformationMessage(message);
+  });
+  commands.registerCommand(Commands.disableAutomaticColor, async () => {
+    await disableAutomaticColor();
+    await vscode.window.showInformationMessage('Automatic Peacock colors are disabled here.');
+  });
 }
 
 export function deactivate() {
