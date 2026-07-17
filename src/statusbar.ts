@@ -46,7 +46,7 @@ export function updateStatusBar(context?: PeacockStatusBarContext) {
   sb.command = Commands.showAndCopyCurrentColor;
   sb.color = status && status.branchForegroundColor;
   const details = [
-    `Peacock color: ${color}`,
+    `Better Peacock color: ${color}`,
     status && status.source ? `Source: ${status.source}` : '',
     status && status.branch ? `Branch: ${status.branch}` : '',
     status && status.branchColor ? `Branch status bar override: ${status.branchColor}` : '',

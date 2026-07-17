@@ -101,7 +101,7 @@ async function resolveAutomaticColor(git: GitIdentity) {
         return result;
       }
     } catch (error) {
-      Logger.info(`Peacock: Could not resolve automatic ${source} color: ${String(error)}`);
+      Logger.info(`Better Peacock: Could not resolve automatic ${source} color: ${String(error)}`);
     }
   }
   return undefined;
@@ -147,7 +147,7 @@ async function performRefresh() {
     },
   });
   Logger.info(
-    `Peacock: Applied ${base.color} from ${base.sourceLabel}` +
+    `Better Peacock: Applied ${base.color} from ${base.sourceLabel}` +
       (branchColor ? ` with ${branchColor} for branch ${git.branch}` : ''),
   );
   return currentState;

@@ -103,7 +103,7 @@ export async function applyColor(input: string, options: ApplyColorOptions = {})
   await updateWorkspaceConfiguration(colorCustomizations);
   updateStatusBar(options.statusBarContext || { color });
 
-  Logger.info(`${extensionShortName}: Peacock is now using ${color}`);
+  Logger.info(`${extensionShortName}: Better Peacock is now using ${color}`);
 
   return color;
 }

@@ -1,15 +1,18 @@
 {
-  "name": "vscode-peacock",
-  "displayName": "Peacock",
-  "description": "Subtly change the workspace color of your workspace. Ideal when you have multiple VS Code instances and you want to quickly identify which is which.",
+  "name": "better-peacock",
+  "displayName": "Better Peacock",
+  "description": "Automatically color-code VS Code workspaces by project, repository, and branch so every window is easy to identify.",
   "version": "4.2.5",
-  "publisher": "johnpapa",
+  "publisher": "chrismeehan20",
   "license": "SEE LICENSE IN LICENSE.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/johnpapa/vscode-peacock.git"
+    "url": "https://github.com/chrismeehan20/better-peacock.git"
   },
-  "homepage": "https://github.com/johnpapa/vscode-peacock/blob/main/README.md",
+  "homepage": "https://github.com/chrismeehan20/better-peacock#readme",
+  "bugs": {
+    "url": "https://github.com/chrismeehan20/better-peacock/issues"
+  },
   "icon": "resources/peacock-icon.png",
   "galleryBanner": {
     "color": "#373436",
@@ -41,87 +44,87 @@
       {
         "command": "peacock.docs",
         "title": "Open the Documentation",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.resetWorkspaceColors",
         "title": "Reset Workspace Colors",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.removeAllColors",
         "title": "Remove All Global and Workspace Colors",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.saveColorToFavorites",
         "title": "Save Current Color to Favorites",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.enterColor",
         "title": "Enter a Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorToPeacockGreen",
         "title": "Color to Peacock Green",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.addRecommendedFavorites",
         "title": "Add the Recommended Favorites",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorToRandom",
         "title": "Surprise Me with a Random Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorToFavorite",
         "title": "Change to a Favorite Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.darken",
         "title": "Darken",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.lighten",
         "title": "Lighten",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.showAndCopyCurrentColor",
         "title": "Copy the Current Color to the Clipboard",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.enableAutomaticColor",
         "title": "Enable Automatic Workspace Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.disableAutomaticColor",
         "title": "Disable Automatic Workspace Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.refreshAutomaticColor",
         "title": "Refresh Automatic Workspace Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorOfLiveShareHost",
         "title": "Change Live Share Color (Host)",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorOfLiveShareGuest",
         "title": "Change Live Share Color (Guest)",
-        "category": "Peacock"
+        "category": "Better Peacock"
       }
     ],
     "keybindings": [
@@ -602,11 +605,5 @@
     "hooks": {
       "pre-commit": "npm run pretty"
     }
-  },
-  "__metadata": {
-    "id": "5a7017bf-c571-4d77-b902-6e56b16f539a",
-    "publisherDisplayName": "John Papa",
-    "publisherId": "4434843a-4ebf-4f44-84f5-4176380c492d",
-    "isPreReleaseVersion": false
   }
 }

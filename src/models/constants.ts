@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 
 export const extensionShortName = 'peacock';
-export const extensionId = 'johnpapa.vscode-peacock';
+export const extensionId = 'chrismeehan20.better-peacock';
 export const favoriteColorSeparator = '->';
 
-export const docsUri = vscode.Uri.parse('https://johnpapa.github.io/vscode-peacock/');
+export const docsUri = vscode.Uri.parse('https://github.com/chrismeehan20/better-peacock#readme');
 
 // Matches the default inactive alpha in VS Code of 0x99
 // represented in 0-1 range for tinycolor.setAlpha()

@@ -1,51 +1,52 @@
-# Peacock for Visual Studio Code
+# Better Peacock for Visual Studio Code
 
-![Peacock Icon](https://raw.githubusercontent.com/johnpapa/vscode-peacock/main/resources/peacock-icon-small.png 'Peacock')
+![Better Peacock Icon](resources/peacock-icon-small.png 'Better Peacock')
 
-Subtly change the color of your Visual Studio Code workspace. Ideal when you have multiple VS Code instances, use VS Live Share, or use VS Code's Remote features, and you want to quickly identify your editor.
+Automatically give each Visual Studio Code project, repository, and protected branch a recognizable color. Better Peacock makes it easier to identify the right editor window before you edit, commit, or push.
 
-Read the extensive [documentation here](https://johnpapa.github.io/vscode-peacock/) which includes a guide on how to use Peacock and a [changelog](https://johnpapa.github.io/vscode-peacock/#/changelog/)
-
-[![Badge for version for Visual Studio Code extension johnpapa.vscode-peacock](https://vsmarketplacebadge.apphb.com/version/johnpapa.vscode-peacock.svg?color=2f99fa&style=?style=for-the-badge&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&WT.mc_id=academic-0000-jopapa)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/johnpapa.vscode-peacock?color=2f99fa&style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&WT.mc_id=academic-0000-jopapa)
-[![Downloads](https://img.shields.io/visual-studio-marketplace/d/johnpapa.vscode-peacock?color=2f99fa&style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&WT.mc_id=academic-0000-jopapa)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/johnpapa.vscode-peacock?color=2f99fa&style=flat&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&WT.mc_id=academic-0000-jopapa)
 [![Live Share](https://img.shields.io/badge/Live_Share-enabled-8F80CF.svg?color=2f99fa&style=flat&logo=visual-studio-code)](https://visualstudio.microsoft.com/services/live-share/?WT.mc_id=academic-0000-jopapa)
 
 [![AI Ready](https://img.shields.io/badge/AI--Ready-yes-brightgreen?style=flat)](https://github.com/johnpapa/ai-ready)
 [![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?color=2f99fa&style=flat)](http://opensource.org/licenses/MIT)
 [![All Contributors](https://img.shields.io/badge/all_contributors-15-blue.svg?style=flat)](#contributors)
 
-[![CI](https://github.com/johnpapa/vscode-peacock/actions/workflows/ci.yml/badge.svg)](https://github.com/johnpapa/vscode-peacock/actions/workflows/ci.yml)
+[![CI](https://github.com/chrismeehan20/better-peacock/actions/workflows/ci.yml/badge.svg)](https://github.com/chrismeehan20/better-peacock/actions/workflows/ci.yml)
+
+Better Peacock is an MIT-licensed fork of [Peacock](https://github.com/johnpapa/vscode-peacock), created by John Papa. It preserves the existing `peacock.*` settings and command IDs so current workspace configuration remains compatible.
 
 ## Install
 
-1. Open **Extensions** sideBar panel in Visual Studio Code and choose the menu options for **View → Extensions**
-1. Search for `Peacock`
-1. Click **Install**
-1. Click **Reload**, if required
+Until Better Peacock is published in the VS Code Marketplace, install a locally packaged VSIX:
+
+```bash
+npm ci
+npm run package
+code --install-extension better-peacock-4.2.5.vsix
+```
+
+Disable or uninstall the original Peacock extension before enabling Better Peacock. Both intentionally recognize the same `peacock.*` settings for migration compatibility.
 
 ## Documentation
 
-Read the extensive [documentation here](https://johnpapa.github.io/vscode-peacock/) which includes a guide on how to use Peacock and a [changelog](https://johnpapa.github.io/vscode-peacock/#/changelog/)
+Read the [guide](docs/guide/README.md) and [changelog](docs/changelog/README.md).
 
 ## Quick Usage
 
-Let's see Peacock in action!
+Let's see Better Peacock in action!
 
-1. Create/Open a VSCode Workspace ([Peacock only works in a Workspace](https://johnpapa.github.io/vscode-peacock/#/guide/?id=peacock-commands-are-not-appearing))
+1. Create or open a VS Code workspace
 1. Press `F1` to open the command palette
-1. Type `Peacock`
-1. Choose `Peacock: Change to a favorite color`
+1. Type `Better Peacock`
+1. Choose `Better Peacock: Change to a favorite color`
 1. Choose one of the pre-defined colors and see how it changes your editor
 
 Now enjoy exploring the rest of the features explained in the docs!
 
-![Peacock Windows](https://raw.githubusercontent.com/johnpapa/vscode-peacock/main/resources/hero.png 'Peacock windows')
+![Better Peacock Windows](resources/hero.png 'Better Peacock windows')
 
 ## Automatic Project and Branch Colors
 
-This fork adds opt-in automatic colors while preserving Peacock's manual colors, favorites, element adjustments, Remote Development, and Live Share behavior.
+Better Peacock adds opt-in automatic colors while preserving Peacock's manual colors, favorites, element adjustments, Remote Development, and Live Share behavior.
 
 - Derive a branded color from a PNG, JPEG, SVG, or ICO project icon
 - Derive a stable repository color from a normalized Git remote URL
@@ -53,7 +54,7 @@ This fork adds opt-in automatic colors while preserving Peacock's manual colors,
 - Override the status bar on exact or glob-matched branches such as `main`, `develop`, or `release/*`
 - Refresh when the icon, Git remote, or current branch changes
 
-Run **Peacock: Enable Automatic Workspace Color**, then optionally add protected-branch warnings:
+Run **Better Peacock: Enable Automatic Workspace Color**, then optionally add protected-branch warnings:
 
 ```json
 {
@@ -65,11 +66,11 @@ Run **Peacock: Enable Automatic Workspace Color**, then optionally add protected
 }
 ```
 
-See the [guide](https://johnpapa.github.io/vscode-peacock/#/guide/?id=automatic-colors) for source priority and all settings.
+See the [guide](docs/guide/README.md#automatic-colors) for source priority and all settings.
 
 ## Resources
 
-- [Peacock docs on GitHub Pages](https://johnpapa.github.io/vscode-peacock/)
+- [Better Peacock guide](docs/guide/README.md)
 - [Get VS Code](https://code.visualstudio.com/?WT.mc_id=academic-0000-jopapa)
 - [Create your first VS Code extension](https://code.visualstudio.com/api/get-started/your-first-extension?WT.mc_id=academic-0000-jopapa)
 - [VS Code Extension API](https://code.visualstudio.com/api/references/vscode-api?WT.mc_id=academic-0000-jopapa)
@@ -109,7 +110,7 @@ See [AGENTS.md](AGENTS.md) for the full project guide including architecture, pa
 
 ## Problems or Suggestions
 
-[Open an issue here](https://github.com/johnpapa/vscode-peacock/issues)
+[Open an issue here](https://github.com/chrismeehan20/better-peacock/issues)
 
 ## Contributors
 

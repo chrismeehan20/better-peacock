@@ -6,6 +6,7 @@ All notable changes to the code will be documented in this file.
 
 ### Features
 
+- Rebranded the fork as Better Peacock with its own extension and repository identity while preserving the existing `peacock.*` settings and command IDs
 - Added opt-in automatic colors derived from project icons, normalized Git remotes, or deterministic workspace identities
 - Added PNG, JPEG, SVG, and ICO project-icon color extraction with dominant, vibrant, muted, and pastel strategies
 - Added exact and glob-based branch status bar overrides for protected-branch warnings
