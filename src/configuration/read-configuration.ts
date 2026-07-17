@@ -19,6 +19,7 @@ import {
   ForegroundColors,
   defaultAmountToDarkenLighten,
   ColorSource,
+  IEnvironmentGuardrail,
 } from '../models';
 import {
   getAdjustedColorHex,
@@ -34,6 +35,37 @@ import { sortSettingsIndexer } from '../object-library';
 
 const { workspace } = vscode;
 
+export type AutomaticColorSource = 'projectIcon' | 'gitRemote' | 'workspace';
+export type AutomaticColorMode = 'off' | 'auto' | AutomaticColorSource;
+
+export function getAgentBeaconEnabled() {
+  return readConfiguration<boolean>(StandardSettings.AgentBeaconEnabled, false);
+}
+
+export function getAgentBeaconNotifications() {
+  return readConfiguration<boolean>(StandardSettings.AgentBeaconNotifications, true);
+}
+
+export function getAgentBeaconPollInterval() {
+  return readConfiguration<number>(StandardSettings.AgentBeaconPollInterval, 1000);
+}
+
+export function getAgentBeaconStaleMinutes() {
+  return readConfiguration<number>(StandardSettings.AgentBeaconStaleMinutes, 480);
+}
+
+export function getGitRiskEnabled() {
+  return readConfiguration<boolean>(StandardSettings.GitRiskEnabled, true);
+}
+
+export function getGitRiskAheadBehindThreshold() {
+  return readConfiguration<number>(StandardSettings.GitRiskAheadBehindThreshold, 1);
+}
+
+export function getEnvironmentGuardrails() {
+  return readConfiguration<IEnvironmentGuardrail[]>(StandardSettings.EnvironmentGuardrails, []);
+}
+
 export function getSurpriseMeFromFavoritesOnly() {
   return readConfiguration<boolean>(StandardSettings.SurpriseMeFromFavoritesOnly, false);
 }
@@ -47,6 +79,61 @@ export function getDarkenLightenPercentage() {
 
 export function getShowColorInStatusBar() {
   return readConfiguration<boolean>(StandardSettings.ShowColorInStatusBar, true);
+}
+
+export function getAutoColorMode() {
+  return readConfiguration<AutomaticColorMode>(StandardSettings.AutoColorMode, 'off');
+}
+
+export function getAutoColorPriority() {
+  return readConfiguration<AutomaticColorSource[]>(StandardSettings.AutoColorPriority, [
+    'projectIcon',
+    'gitRemote',
+    'workspace',
+  ]);
+}
+
+export function getBranchColors() {
+  return readConfiguration<{ [branch: string]: string }>(StandardSettings.BranchColors, {});
+}
+
+export function getColorBranchStatusItem() {
+  return readConfiguration<boolean>(StandardSettings.ColorBranchStatusItem, true);
+}
+
+export function getGitRemoteName() {
+  return readConfiguration<string>(StandardSettings.GitRemoteName, 'origin');
+}
+
+export function getProjectIconPath() {
+  return readConfiguration<string>(StandardSettings.ProjectIconPath, '');
+}
+
+export function getProjectIconSearchPatterns() {
+  return readConfiguration<string[]>(StandardSettings.ProjectIconSearchPatterns, [
+    'favicon.ico',
+    'favicon.png',
+    'favicon.svg',
+    'public/favicon.ico',
+    'public/favicon.png',
+    'public/favicon.svg',
+    'app/favicon.ico',
+    'app/favicon.png',
+    'assets/icon.png',
+    'assets/app-icon.png',
+    'src/assets/icon.png',
+  ]);
+}
+
+export function getProjectIconMaxSize() {
+  return readConfiguration<number>(StandardSettings.ProjectIconMaxSize, 5 * 1024 * 1024);
+}
+
+export function getProjectIconPaletteStrategy() {
+  return readConfiguration<'dominant' | 'vibrant' | 'muted' | 'pastel'>(
+    StandardSettings.ProjectIconPaletteStrategy,
+    'dominant',
+  );
 }
 
 export function getColorCustomizationConfig() {

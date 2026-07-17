@@ -1,17 +1,18 @@
-# Peacock — Agent Guide
+# Better Peacock — Agent Guide
 
 ## Project Overview
 
-Peacock is a Visual Studio Code extension that subtly changes the color of your workspace. It's ideal when you have multiple VS Code instances, use VS Live Share, or use VS Code's Remote features and want to quickly identify which editor is which.
+Better Peacock is a Visual Studio Code extension that automatically gives projects, repositories, and protected branches recognizable colors. It is an MIT-licensed fork of John Papa's Peacock extension.
 
-- **Publisher:** johnpapa
-- **VS Code Marketplace:** [Peacock](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock)
+- **Publisher:** chrismeehan20
+- **Repository:** [Better Peacock](https://github.com/chrismeehan20/better-peacock)
 - **Version:** See `package.json` for the current version
+- **Compatibility:** Keep the existing `peacock.*` settings, commands, and mementos unless a migration is intentionally designed and tested
 
 ## Repository Structure
 
 ```
-vscode-peacock/
+better-peacock/
 ├── src/                        — Extension source code (TypeScript)
 │   ├── extension.ts            — Extension entry point (activation, command registration)
 │   ├── commands.ts             — Command implementations (enter color, random, favorites, etc.)
@@ -19,6 +20,10 @@ vscode-peacock/
 │   ├── color-library.ts        — Color manipulation utilities (uses tinycolor2)
 │   ├── configuration/          — VS Code configuration read/write helpers
 │   ├── models/                 — TypeScript interfaces, enums, constants, state
+│   ├── automatic-color/        — Project, Git remote, workspace, and branch color logic
+│   ├── agent-beacon/           — Agent hooks, state polling, and Attention Queue
+│   ├── git-risk.ts             — Dirty/conflict/ahead/behind status indicator
+│   ├── environment-guardrails.ts — Explicit environment warning rules
 │   ├── inputs.ts               — User input prompts (color picker, quick pick)
 │   ├── statusbar.ts            — Status bar color display
 │   ├── live-share/             — VS Live Share integration

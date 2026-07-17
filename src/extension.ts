@@ -7,7 +7,6 @@ import {
   StandardSettings,
   extensionShortName,
   getExtensionVersion,
-  ColorSource,
 } from './models';
 import {
   resetWorkspaceColorsHandler,
@@ -28,38 +27,48 @@ import {
   getSurpriseMeOnStartup,
   writeRecommendedFavoriteColors,
   getEnvironmentAwareColor,
-  inspectColor,
-  getCurrentColorBeforeAdjustments,
   getFavoriteColors,
 } from './configuration';
-import { applyColor, updateColorSetting } from './apply-color';
 import { Logger } from './logging';
 import { addLiveShareIntegration } from './live-share';
 import { addRemoteIntegration } from './remote';
 import { saveFavoritesVersionGlobalMemento, getMementos } from './mementos';
+import {
+  disableAutomaticColor,
+  enableAutomaticColor,
+  initializeAutomaticColor,
+  refreshAutomaticColor,
+} from './automatic-color';
+import { initializeAgentBeacon } from './agent-beacon';
+import { initializeEnvironmentGuardrails } from './environment-guardrails';
+import { initializeGitRisk } from './git-risk';
 
 const { commands, workspace } = vscode;
 
 export async function activate(context: vscode.ExtensionContext) {
   State.extensionContext = context;
-  // Logger.info(`${extensionShortName}: Extension "vscode-peacock" is now active!`);
-  Logger.info(getMementos(), true, 'Peacock Mementos');
+  // Logger.info(`${extensionShortName}: Extension "better-peacock" is now active!`);
+  Logger.info(getMementos(), true, 'Better Peacock Mementos');
 
   registerCommands();
+  initializeAgentBeacon(context);
   await initializeTheStarterSetOfFavorites();
 
   if (workspace.workspaceFolders) {
-    Logger.info('Peacock is in a workspace, so Peacock functionality is available.');
+    Logger.info('Better Peacock is in a workspace, so its functionality is available.');
     /**
      * We only run this logic if we are in a workspace
      * because they may write peacock settings, and it will fail.
      * This entire function will re-run when a workspace is opened.
      */
     await checkSurpriseMeOnStartupLogic();
-    await addLiveShareIntegration(State.extensionContext);
     await addRemoteIntegration(State.extensionContext);
+    await initializeAutomaticColor(State.extensionContext);
+    await initializeGitRisk(State.extensionContext);
+    await initializeEnvironmentGuardrails(State.extensionContext);
+    await addLiveShareIntegration(State.extensionContext);
   } else {
-    Logger.info('Peacock is not in a workspace, so Peacock functionality is not available.');
+    Logger.info('Better Peacock is not in a workspace, so its functionality is unavailable.');
   }
 
   addSubscriptions(); // add these AFTER applying initial config
@@ -74,25 +83,11 @@ function addSubscriptions() {
 function applyPeacock(): (e: vscode.ConfigurationChangeEvent) => any {
   return async e => {
     const color = getEnvironmentAwareColor();
-    const appliedColor = getCurrentColorBeforeAdjustments();
-    if (checkIfPeacockSettingsChanged(e) && (color || appliedColor)) {
-      /**
-       * If the settings have changed
-       * AND (either we have a peacock.color/remoteColor to apply
-       *       OR we have an applied color already in the color customizations),
-       * Then we apply the "color"
-       */
+    if (checkIfPeacockSettingsChanged(e)) {
       Logger.info(
-        `${extensionShortName}: Configuration changed. Changing the color to most recently selected color: ${color}`,
+        `${extensionShortName}: Configuration changed. Refreshing manual and automatic colors: ${color}`,
       );
-      await applyColor(color);
-
-      // Only update the color in the workspace settings
-      // if there was already a workspace setting
-      const colorSource = inspectColor();
-      if (colorSource.colorSource === ColorSource.WorkspaceValue) {
-        await updateColorSetting(color);
-      }
+      await refreshAutomaticColor();
     }
   };
 }
@@ -110,10 +105,30 @@ function registerCommands() {
   commands.registerCommand(Commands.darken, darkenHandler);
   commands.registerCommand(Commands.lighten, lightenHandler);
   commands.registerCommand(Commands.showAndCopyCurrentColor, showAndCopyCurrentColorHandler);
+  commands.registerCommand(Commands.refreshAutomaticColor, async () => {
+    const state = await refreshAutomaticColor();
+    const message = state
+      ? `Better Peacock applied ${state.color} from ${state.sourceLabel}.`
+      : 'Better Peacock did not find an enabled automatic color source.';
+    await vscode.window.showInformationMessage(message);
+  });
+  commands.registerCommand(Commands.enableAutomaticColor, async () => {
+    const state = await enableAutomaticColor();
+    const message = state
+      ? `Automatic colors enabled: ${state.color} from ${state.sourceLabel}.`
+      : 'Automatic colors are enabled, but no source was found.';
+    await vscode.window.showInformationMessage(message);
+  });
+  commands.registerCommand(Commands.disableAutomaticColor, async () => {
+    await disableAutomaticColor();
+    await vscode.window.showInformationMessage(
+      'Automatic Better Peacock colors are disabled here.',
+    );
+  });
 }
 
 export function deactivate() {
-  // Logger.info(`${extensionShortName}: Extension "vscode-peacock" is now deactive`);
+  // Logger.info(`${extensionShortName}: Extension "better-peacock" is now deactive`);
 }
 
 async function initializeTheStarterSetOfFavorites() {
@@ -142,14 +157,14 @@ export async function checkSurpriseMeOnStartupLogic() {
   const peacockColor = getEnvironmentAwareColor();
   if (getSurpriseMeOnStartup()) {
     if (peacockColor) {
-      const message = `Peacock did not change the color using "surprise me on startup" because the color ${peacockColor} was already set.`;
+      const message = `Better Peacock did not change the color using "surprise me on startup" because the color ${peacockColor} was already set.`;
       Logger.info(message);
       return;
     }
 
     await changeColorToRandomHandler();
     const color = getEnvironmentAwareColor();
-    const message = `Peacock changed the color to ${color}, because the setting is enabled for ${StandardSettings.SurpriseMeOnStartup}`;
+    const message = `Better Peacock changed the color to ${color}, because the setting is enabled for ${StandardSettings.SurpriseMeOnStartup}`;
     Logger.info(message);
   }
 }

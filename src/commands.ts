@@ -22,12 +22,15 @@ import { promptForColor, promptForFavoriteColor, promptForFavoriteColorName } fr
 
 import { resetLiveSharePreviousColors } from './live-share';
 import { notify } from './notification';
+import { getDisplayedColor } from './statusbar';
+import { refreshAutomaticColor } from './automatic-color';
 import * as vscode from 'vscode';
 
 export async function removeAllPeacockColorsHandler() {
   await resetWorkspaceColorsHandler();
   await updatePeacockColorInUserSettings(undefined);
   await updatePeacockRemoteColorInUserSettings(undefined);
+  await refreshAutomaticColor();
   return State.extensionContext;
 }
 
@@ -149,7 +152,7 @@ export async function lightenHandler() {
 }
 
 export async function showAndCopyCurrentColorHandler() {
-  const color = getEnvironmentAwareColor();
+  const color = getDisplayedColor();
   if (!color) {
     return;
   }

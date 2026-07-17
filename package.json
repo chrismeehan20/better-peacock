@@ -1,15 +1,18 @@
 {
-  "name": "vscode-peacock",
-  "displayName": "Peacock",
-  "description": "Subtly change the workspace color of your workspace. Ideal when you have multiple VS Code instances and you want to quickly identify which is which.",
+  "name": "better-peacock",
+  "displayName": "Better Peacock",
+  "description": "Automatically color-code VS Code workspaces by project, repository, and branch so every window is easy to identify.",
   "version": "4.2.5",
-  "publisher": "johnpapa",
+  "publisher": "chrismeehan20",
   "license": "SEE LICENSE IN LICENSE.md",
   "repository": {
     "type": "git",
-    "url": "https://github.com/johnpapa/vscode-peacock.git"
+    "url": "https://github.com/chrismeehan20/better-peacock.git"
   },
-  "homepage": "https://github.com/johnpapa/vscode-peacock/blob/main/README.md",
+  "homepage": "https://github.com/chrismeehan20/better-peacock#readme",
+  "bugs": {
+    "url": "https://github.com/chrismeehan20/better-peacock/issues"
+  },
   "icon": "resources/peacock-icon.png",
   "galleryBanner": {
     "color": "#373436",
@@ -28,7 +31,7 @@
   ],
   "preview": false,
   "activationEvents": [
-    "*"
+    "onStartupFinished"
   ],
   "extensionKind": [
     "ui",
@@ -41,72 +44,102 @@
       {
         "command": "peacock.docs",
         "title": "Open the Documentation",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.resetWorkspaceColors",
         "title": "Reset Workspace Colors",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.removeAllColors",
         "title": "Remove All Global and Workspace Colors",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.saveColorToFavorites",
         "title": "Save Current Color to Favorites",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.enterColor",
         "title": "Enter a Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorToPeacockGreen",
         "title": "Color to Peacock Green",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.addRecommendedFavorites",
         "title": "Add the Recommended Favorites",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorToRandom",
         "title": "Surprise Me with a Random Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorToFavorite",
         "title": "Change to a Favorite Color",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.darken",
         "title": "Darken",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.lighten",
         "title": "Lighten",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.showAndCopyCurrentColor",
         "title": "Copy the Current Color to the Clipboard",
-        "category": "Peacock"
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.enableAutomaticColor",
+        "title": "Enable Automatic Workspace Color",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.disableAutomaticColor",
+        "title": "Disable Automatic Workspace Color",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.refreshAutomaticColor",
+        "title": "Refresh Automatic Workspace Color",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.installAgentBeacon",
+        "title": "Install Agent Beacon Hooks",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.uninstallAgentBeacon",
+        "title": "Uninstall Agent Beacon Hooks",
+        "category": "Better Peacock"
+      },
+      {
+        "command": "peacock.showAttentionQueue",
+        "title": "Show Attention Queue",
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorOfLiveShareHost",
         "title": "Change Live Share Color (Host)",
-        "category": "Peacock"
+        "category": "Better Peacock"
       },
       {
         "command": "peacock.changeColorOfLiveShareGuest",
         "title": "Change Live Share Color (Guest)",
-        "category": "Peacock"
+        "category": "Better Peacock"
       }
     ],
     "keybindings": [
@@ -175,11 +208,114 @@
         {
           "command": "peacock.showAndCopyCurrentColor",
           "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "peacock.enableAutomaticColor",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "peacock.disableAutomaticColor",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "peacock.refreshAutomaticColor",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "peacock.installAgentBeacon"
+        },
+        {
+          "command": "peacock.uninstallAgentBeacon"
+        },
+        {
+          "command": "peacock.showAttentionQueue"
         }
       ]
     },
+    "configurationDefaults": {
+      "window.title": "${rootName} [VS Code]"
+    },
     "configuration": {
       "properties": {
+        "peacock.agentBeaconEnabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Shows Codex and Claude Code lifecycle states in the status bar and Attention Queue. Use the Install Agent Beacon Hooks command to configure supported hooks."
+        },
+        "peacock.agentBeaconNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Shows one VS Code notification when a background agent needs input, finishes, or fails. Notifications are suppressed while the window is focused."
+        },
+        "peacock.agentBeaconPollInterval": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 500,
+          "maximum": 10000,
+          "description": "Milliseconds between checks for local Agent Beacon hook events."
+        },
+        "peacock.agentBeaconStaleMinutes": {
+          "type": "number",
+          "default": 480,
+          "minimum": 1,
+          "maximum": 1440,
+          "description": "Minutes before an Agent Beacon event is removed from the Attention Queue."
+        },
+        "peacock.gitRiskEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Shows a compact status item for conflicts, dirty files, and significant ahead or behind counts. The item stays hidden for a clean repository."
+        },
+        "peacock.gitRiskAheadBehindThreshold": {
+          "type": "number",
+          "default": 1,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Minimum ahead or behind count shown by the Git Risk indicator."
+        },
+        "peacock.environmentGuardrails": {
+          "type": "array",
+          "default": [],
+          "description": "Optional, explicit environment warnings. Rules match workspace names or paths, remote authorities, branches, or Git remotes; no environments are inferred automatically.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "pattern"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Short label such as Production or Staging."
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Case-insensitive glob pattern, for example *prod* or ssh-remote+production-* ."
+              },
+              "target": {
+                "type": "string",
+                "default": "any",
+                "enum": [
+                  "any",
+                  "workspace",
+                  "remote",
+                  "branch",
+                  "gitRemote"
+                ],
+                "description": "Environment identity field to test."
+              },
+              "severity": {
+                "type": "string",
+                "default": "warning",
+                "enum": [
+                  "warning",
+                  "error"
+                ],
+                "description": "Accessible status-bar emphasis used for the warning."
+              }
+            }
+          }
+        },
         "peacock.squigglyBeGone": {
           "type": "boolean",
           "default": false,
@@ -234,6 +370,116 @@
           "type": "boolean",
           "default": true,
           "description": "Specifies whether Peacock should affect the title bar."
+        },
+        "peacock.autoColorMode": {
+          "type": "string",
+          "default": "off",
+          "enum": [
+            "off",
+            "auto",
+            "projectIcon",
+            "gitRemote",
+            "workspace"
+          ],
+          "enumDescriptions": [
+            "Do not derive a color automatically",
+            "Try the configured automatic sources in priority order",
+            "Extract a color from the project icon or favicon",
+            "Derive a deterministic color from the configured Git remote",
+            "Derive a deterministic color from the workspace URI"
+          ],
+          "scope": "resource",
+          "description": "Automatically chooses a Peacock color when no manual peacock.color or peacock.remoteColor is set."
+        },
+        "peacock.autoColorPriority": {
+          "type": "array",
+          "default": [
+            "projectIcon",
+            "gitRemote",
+            "workspace"
+          ],
+          "items": {
+            "type": "string",
+            "enum": [
+              "projectIcon",
+              "gitRemote",
+              "workspace"
+            ]
+          },
+          "uniqueItems": true,
+          "description": "Source priority used when peacock.autoColorMode is auto."
+        },
+        "peacock.gitRemoteName": {
+          "type": "string",
+          "default": "origin",
+          "description": "Git remote whose normalized URL is used for deterministic repository colors."
+        },
+        "peacock.projectIconPath": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Optional project-icon path relative to the workspace root. When empty, Peacock searches the configured patterns."
+        },
+        "peacock.projectIconSearchPatterns": {
+          "type": "array",
+          "default": [
+            "favicon.ico",
+            "favicon.png",
+            "favicon.svg",
+            "public/favicon.ico",
+            "public/favicon.png",
+            "public/favicon.svg",
+            "app/favicon.ico",
+            "app/favicon.png",
+            "assets/icon.png",
+            "assets/app-icon.png",
+            "src/assets/icon.png"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "scope": "resource",
+          "description": "Ordered glob patterns used to find an icon or favicon for automatic color extraction."
+        },
+        "peacock.projectIconPaletteStrategy": {
+          "type": "string",
+          "default": "dominant",
+          "enum": [
+            "dominant",
+            "vibrant",
+            "muted",
+            "pastel"
+          ],
+          "scope": "resource",
+          "description": "Color treatment applied after extracting the dominant project-icon color."
+        },
+        "peacock.projectIconMaxSize": {
+          "type": "number",
+          "default": 5242880,
+          "minimum": 1024,
+          "scope": "resource",
+          "description": "Maximum project-icon file size in bytes."
+        },
+        "peacock.branchColors": {
+          "type": "object",
+          "default": {},
+          "additionalProperties": {
+            "type": "string",
+            "format": "color"
+          },
+          "examples": [
+            {
+              "main": "#d73a49",
+              "develop": "#fb8c00",
+              "release/*": "#8e44ad"
+            }
+          ],
+          "description": "Branch name or glob pattern to status-bar color. Exact names take priority; for example, use main to warn on a protected branch."
+        },
+        "peacock.colorBranchStatusItem": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the current branch in Peacock's status item with a deterministic branch foreground color."
         },
         "peacock.color": {
           "type": "string",
@@ -424,9 +670,11 @@
     "@types/node": "12.12.16",
     "@types/sinon": "^7.5.2",
     "@types/vscode": "^1.49.0",
+    "@types/upng-js": "^2.1.5",
     "@types/webpack-env": "^1.18.8",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
+    "@vscode/test-electron": "^2.5.2",
     "@vscode/test-web": "^0.0.80",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.12.0",
@@ -446,24 +694,19 @@
     "sinon": "^9.1.0",
     "ts-loader": "^9.5.7",
     "typescript": "^3.9.7",
-    "vscode-test": "^1.4.0",
     "webpack": "^5.106.2",
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
     "@types/tinycolor2": "^1.4.6",
+    "jpeg-js": "^0.4.4",
     "tinycolor2": "^1.6.0",
+    "upng-js": "^2.1.0",
     "vsls": "^1.0.2594"
   },
   "husky": {
     "hooks": {
       "pre-commit": "npm run pretty"
     }
-  },
-  "__metadata": {
-    "id": "5a7017bf-c571-4d77-b902-6e56b16f539a",
-    "publisherDisplayName": "John Papa",
-    "publisherId": "4434843a-4ebf-4f44-84f5-4176380c492d",
-    "isPreReleaseVersion": false
   }
 }

@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability in Peacock, please report it responsibly.
 
-**Do not open a public issue.** Instead, use [GitHub's private vulnerability reporting](https://github.com/johnpapa/vscode-peacock/security/advisories/new) or email [johnpapa@gmail.com](mailto:johnpapa@gmail.com).
+**Do not open a public issue.** Instead, use [GitHub's private vulnerability reporting](https://github.com/chrismeehan20/better-peacock/security/advisories/new).
 
 ## Scope
 

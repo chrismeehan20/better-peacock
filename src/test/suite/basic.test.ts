@@ -34,6 +34,12 @@ suite('Basic Extension Tests', () => {
     assert.equal(extension.isActive, true);
   });
 
+  test('Extension uses the Better Peacock identity', () => {
+    assert.equal(extension.id, 'chrismeehan20.better-peacock');
+    assert.equal(extension.packageJSON.name, 'better-peacock');
+    assert.equal(extension.packageJSON.displayName, 'Better Peacock');
+  });
+
   test('Extension loads in VSCode and is active', async () => {
     // Hopefully a timeout will allow the extension to activate within Windows
     // otherwise we get a false result.
@@ -65,6 +71,11 @@ suite('Basic Extension Tests', () => {
       );
       assert.ok(result);
     }
+  });
+
+  test('Window title identifies the repository in native window views', () => {
+    const defaults = extension.packageJSON.contributes.configurationDefaults;
+    assert.equal(defaults['window.title'], '${rootName} [VS Code]');
   });
 
   test('AffectedSettings exist in package.json', () => {

@@ -2,6 +2,29 @@
 
 All notable changes to the code will be documented in this file.
 
+## Unreleased
+
+### Features
+
+- Rebranded the fork as Better Peacock with its own extension and repository identity while preserving the existing `peacock.*` settings and command IDs
+- Added opt-in automatic colors derived from project icons, normalized Git remotes, or deterministic workspace identities
+- Added PNG, JPEG, SVG, and ICO project-icon color extraction with dominant, vibrant, muted, and pastel strategies
+- Added exact and glob-based branch status bar overrides for protected-branch warnings
+- Added live Git branch/remote and project-icon refresh, plus automatic-color enable, disable, and refresh commands
+- Enhanced the Peacock status item with source details, the current branch, and deterministic branch foreground colors
+- Added a concise `${rootName} [VS Code]` native window-title default for clearer macOS Mission Control labels
+- Added opt-in Agent Beacon lifecycle integration for Codex and Claude Code with reversible, backup-first hook setup
+- Added a cross-project Attention Queue in the VS Code Command Palette
+- Added unobtrusive Git Risk indicators for conflicts, dirty files, and ahead/behind counts
+- Added explicit, opt-in Environment Guardrails for workspace, remote, branch, and Git-remote patterns
+- Replaced broad `*` activation with `onStartupFinished` and removed test artifacts from packaged VSIX files
+
+### Tests & Documentation
+
+- Added coverage for remote normalization, deterministic hashes, branch patterns, icon palettes, and status-bar-only branch overrides
+- Added coverage for hook merging/removal, state-only hook output, agent priority, Git Risk thresholds, and environment rule matching
+- Documented automatic source priority, protected branch examples, and the new settings and commands
+
 ## 4.2.5
 
 ### Docs & Infrastructure

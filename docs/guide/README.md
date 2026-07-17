@@ -1,26 +1,21 @@
-# Peacock for Visual Studio Code
+# Better Peacock for Visual Studio Code
 
 ## Overview
 
-Subtly change the color of your Visual Studio Code workspace. Ideal when you have multiple VS Code instances, use VS Live Share, or use VS Code's Remote features, and you want to quickly identify your editor.
+Automatically give each Visual Studio Code project, repository, and protected branch a recognizable color.
 
 ## Install
 
-1. Open **Extensions** sideBar panel in Visual Studio Code via the menu item `View → Extensions`
-1. Search for **Peacock**
-1. Click **Install**
-1. Click **Reload**, if required
-
-> You can also [install Peacock from the marketplace here](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&wt.mc_id=vscodepeacock-github-jopapa)
+Package the extension with `npm run package`, install the generated VSIX, and disable the original Peacock extension before enabling Better Peacock.
 
 ## Quick Usage
 
-Let's see Peacock in action!
+Let's see Better Peacock in action!
 
 1. Create/Open a VSCode Workspace ([Peacock only works in a Workspace](/guide/#peacock-commands-are-not-appearing))
 1. Press `F1` to open the command palette
-1. Type `Peacock`
-1. Choose `Peacock: Change to a favorite color`
+1. Type `Better Peacock`
+1. Choose `Better Peacock: Change to a favorite color`
 1. Choose one of the pre-defined colors and see how it changes your editor
 
 Now enjoy exploring the rest of the features explained in the docs, here!
@@ -29,7 +24,7 @@ Now enjoy exploring the rest of the features explained in the docs, here!
 
 ## Features
 
-Commands can be found in the command palette. Look for commands beginning with "Peacock:"
+Commands can be found in the command palette. Look for commands beginning with "Better Peacock:"
 
 - Change the color of [Affected Elements](#affected-elements) (see `peacock.affect*` in the [Settings](#settings) section) to
   - [user defined color](#input-formats)
@@ -40,6 +35,12 @@ Commands can be found in the command palette. Look for commands beginning with "
 - Saves colors to your workspace in the `.vscode/settings.json` file
 - Integrates with [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare&wt.mc_id=vscodepeacock-github-jopapa).
 - Integrates with [VS Code Remote](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack&wt.mc_id=vscodepeacock-github-jopapa).
+- Can automatically derive stable colors from a project icon, Git remote, or workspace identity.
+- Can warn when you switch to protected branches by overriding the status bar color.
+- Uses a concise `Repository [VS Code]` native window title so projects are easier to identify in macOS Mission Control and other system window views.
+- Can show supported Codex and Claude Code states and aggregate projects needing attention across VS Code windows.
+- Shows compact Git risk while remaining hidden for clean repositories.
+- Supports explicit environment warning rules without guessing which environments are sensitive.
 
 ## Settings
 
@@ -69,10 +70,107 @@ Commands can be found in the command palette. Look for commands beginning with "
 | peacock.vslsShareColor              | Peacock color for Live Share Color when acting as a Guest                                                           |
 | peacock.vslsJoinColor               | Peacock color for Live Share color when acting as the Host                                                          |
 | peacock.squigglyBeGone              | Easter Egg feature for FUN. Hides all error, warning, and info underlines. This setting has NO effect on your code. |
+| peacock.autoColorMode               | Automatic source: off, auto, projectIcon, gitRemote, or workspace                                                   |
+| peacock.autoColorPriority           | Ordered source fallback used by auto mode                                                                           |
+| peacock.gitRemoteName               | Git remote to normalize and hash; defaults to origin                                                                |
+| peacock.projectIconPath             | Optional workspace-relative icon path                                                                               |
+| peacock.projectIconSearchPatterns   | Ordered icon and favicon glob patterns                                                                              |
+| peacock.projectIconPaletteStrategy  | dominant, vibrant, muted, or pastel image treatment                                                                 |
+| peacock.branchColors                | Exact branch names or glob patterns mapped to warning colors                                                        |
+| peacock.colorBranchStatusItem       | Shows the branch with a deterministic foreground color in Peacock's status item                                     |
+| peacock.agentBeaconEnabled          | Enables local, hook-driven Codex and Claude Code status monitoring                                                   |
+| peacock.agentBeaconNotifications    | Notifies once for background input, ready, and failed transitions                                                    |
+| peacock.agentBeaconPollInterval     | Local Agent Beacon state check interval in milliseconds                                                             |
+| peacock.agentBeaconStaleMinutes     | Removes old states from the Attention Queue                                                                          |
+| peacock.gitRiskEnabled              | Shows conflicts, dirty files, and ahead/behind risk; hidden when clean                                               |
+| peacock.gitRiskAheadBehindThreshold | Minimum ahead or behind count shown                                                                                   |
+| peacock.environmentGuardrails       | Explicit glob rules for workspace, remote, branch, or Git-remote warnings                                            |
+
+### Automatic Colors
+
+Automatic colors are opt-in and never replace an explicit `peacock.color` or `peacock.remoteColor`. Run **Better Peacock: Enable Automatic Workspace Color**, or set `peacock.autoColorMode` in workspace settings.
+
+With `auto` mode, Peacock tries these sources in `peacock.autoColorPriority` order:
+
+1. **Project icon** — extracts the dominant color from PNG, JPEG, SVG, or ICO files and can make it vibrant, muted, or pastel.
+2. **Git remote** — normalizes HTTPS, SSH, and scp-like remote URLs before hashing, so clones of the same repository receive the same color.
+3. **Workspace identity** — hashes the workspace file or sorted workspace-folder URIs, including remote URI authorities.
+
+The color is deterministic: reopening the same project produces the same result. Peacock watches icon files, Git repositories, remotes, and branch changes and refreshes without a window reload.
+
+### Protected Branch Colors
+
+Use `peacock.branchColors` for a full status-bar warning on protected or otherwise important branches. Exact names take priority over `*` glob patterns.
+
+```json
+{
+  "peacock.branchColors": {
+    "main": "#d73a49",
+    "develop": "#fb8c00",
+    "release/*": "#8e44ad"
+  }
+}
+```
+
+The branch warning changes only the status bar; the project color remains on the title and activity bars. The status item also displays the current branch and can use a deterministic branch foreground color.
+
+### Agent Beacon
+
+Run **Better Peacock: Install Agent Beacon Hooks** and choose Codex, Claude Code, or both. The command:
+
+1. asks for explicit confirmation;
+2. installs a small state-only helper under `~/.better-peacock`;
+3. backs up an existing `~/.codex/hooks.json` or `~/.claude/settings.json`;
+4. merges handlers for supported prompt, permission, notification, stop, and failure events; and
+5. enables `peacock.agentBeaconEnabled` globally.
+
+The helper records only the provider, lifecycle state, workspace path, event name, session ID, optional notification message, and timestamp. It never reads conversation transcripts or project files. Hook errors exit successfully so Agent Beacon cannot block an agent turn.
+
+Codex requires reviewing and trusting new hook definitions with `/hooks`. Restart active Codex or Claude Code sessions after installation. Use **Better Peacock: Uninstall Agent Beacon Hooks** to surgically remove Better Peacock handlers while preserving other hooks and settings.
+
+### Attention Queue
+
+Run **Better Peacock: Show Attention Queue** in the Command Palette from any VS Code window. The quick-pick reads the shared local state directory and lists projects whose agent needs input, is ready, or failed. Selecting a project opens it in a new VS Code window. Running agents are summarized only when nothing needs attention.
+
+### Git Risk
+
+Git Risk is enabled by default but remains hidden when the repository is clean. Its compact status item can show:
+
+- conflicts with an accessible error background;
+- staged and unstaged change counts;
+- unpushed commits (`↑`); and
+- commits behind upstream (`↓`).
+
+Click the item to open Source Control. Use `peacock.gitRiskAheadBehindThreshold` to suppress insignificant ahead or behind counts.
+
+### Environment Guardrails
+
+Environment Guardrails are intentionally empty by default. Better Peacock does not guess that a branch, SSH host, or workspace is production. Add explicit case-insensitive glob rules when your workflow benefits from a persistent warning:
+
+```json
+{
+  "peacock.environmentGuardrails": [
+    {
+      "name": "Production",
+      "pattern": "*production*",
+      "target": "remote",
+      "severity": "error"
+    },
+    {
+      "name": "Release Branch",
+      "pattern": "release/*",
+      "target": "branch",
+      "severity": "warning"
+    }
+  ]
+}
+```
+
+Targets can be `any`, `workspace`, `remote`, `branch`, or `gitRemote`. A matching rule adds a short shield item without changing the durable repository color.
 
 ### Favorite Colors
 
-After setting 1 or more colors (hex or named) in the user setting for `peacock.favoriteColors`, you can select **Peacock: Change to a Favorite Color** and you will be prompted with the list from `peacock.favoriteColors` from user settings.
+After setting 1 or more colors (hex or named) in the user setting for `peacock.favoriteColors`, you can select **Better Peacock: Change to a Favorite Color** and you will be prompted with the list from `peacock.favoriteColors` from user settings.
 
 ```text
 Gatsby Purple -> #123456
@@ -102,7 +200,7 @@ When opening the Favorites command in the command palette, Peacock now previews 
 
 When you apply a color you enjoy, you can go to the workspace `settings.json` and copy the color's hex code, then create your own favorite color in your user `settings.json`. This involves a few manual steps and arguably is not obvious at first.
 
-The `Peacock: Save Current Color as Favorite Color` feature allows you to save the currently set color as a favorite color, and prompts you to name it.
+The `Better Peacock: Save Current Color as Favorite Color` feature allows you to save the currently set color as a favorite color, and prompts you to name it.
 
 ### Affected Elements
 
@@ -159,18 +257,24 @@ There are key bindings for the lighten command `alt+cmd+=` and for darken comman
 
 | Command                                         | Description                                                                                                                        |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Peacock: Reset Workspace Colors                 | Removes any of the color settings from the `.vscode/settings.json` file. If colors exist in the user settings, they may be applied |
-| Peacock: Remove All Global and Workspace Colors | Removes all of the color settings from both the Workspace `.vscode/settings.json` file and the Global user `settings.json` file.   |
-| Peacock: Enter a Color                          | Prompts you to enter a color (see [input formats](#input-formats))                                                                 |
-| Peacock: Color to Peacock Green                 | Sets the color to Peacock main color, #42b883                                                                                      |
-| Peacock: Surprise me with a Random Color        | Sets the color to a random color                                                                                                   |
-| Peacock: Change to a Favorite Color             | Prompts user to select from their Favorites                                                                                        |
-| Peacock: Save Current Color to Favorites        | Save Current Color to their Favorites                                                                                              |
-| Peacock: Add Recommended Favorites              | Add the recommended favorites to user settings (override same names)                                                               |
-| Peacock: Darken                                 | Darkens the current color by `darkenLightenPercentage`                                                                             |
-| Peacock: Lighten                                | Lightens the current color by `darkenLightenPercentage`                                                                            |
-| Peacock: Show and Copy Current Color            | Shows the current color and copies it to the clipboard                                                                             |
-| Peacock: Show the Documentation                 | Opens the Peacock documentation web site in a browser                                                                              |
+| Better Peacock: Reset Workspace Colors                 | Removes any of the color settings from the `.vscode/settings.json` file. If colors exist in the user settings, they may be applied |
+| Better Peacock: Remove All Global and Workspace Colors | Removes all of the color settings from both the Workspace `.vscode/settings.json` file and the Global user `settings.json` file.   |
+| Better Peacock: Enter a Color                          | Prompts you to enter a color (see [input formats](#input-formats))                                                                 |
+| Better Peacock: Color to Peacock Green                 | Sets the color to Peacock main color, #42b883                                                                                      |
+| Better Peacock: Surprise me with a Random Color        | Sets the color to a random color                                                                                                   |
+| Better Peacock: Change to a Favorite Color             | Prompts user to select from their Favorites                                                                                        |
+| Better Peacock: Save Current Color to Favorites        | Save Current Color to their Favorites                                                                                              |
+| Better Peacock: Add Recommended Favorites              | Add the recommended favorites to user settings (override same names)                                                               |
+| Better Peacock: Darken                                 | Darkens the current color by `darkenLightenPercentage`                                                                             |
+| Better Peacock: Lighten                                | Lightens the current color by `darkenLightenPercentage`                                                                            |
+| Better Peacock: Show and Copy Current Color            | Shows the current color and copies it to the clipboard                                                                             |
+| Better Peacock: Show the Documentation                 | Opens the Peacock documentation web site in a browser                                                                              |
+| Better Peacock: Enable Automatic Workspace Color       | Enables automatic source fallback in this workspace                                                                                |
+| Better Peacock: Disable Automatic Workspace Color      | Disables automatic source fallback in this workspace                                                                               |
+| Better Peacock: Refresh Automatic Workspace Color      | Re-runs icon, Git remote, workspace, and protected-branch detection                                                                |
+| Better Peacock: Install Agent Beacon Hooks              | Backs up and merges supported Codex and Claude Code lifecycle hooks                                                                |
+| Better Peacock: Uninstall Agent Beacon Hooks            | Removes Better Peacock hook handlers while preserving other configuration                                                         |
+| Better Peacock: Show Attention Queue                    | Lists projects whose supported coding agent needs attention or is ready                                                            |
 
 ## Keyboard Shortcuts
 
@@ -192,8 +296,8 @@ Peacock detects when the [Live Share](https://marketplace.visualstudio.com/items
 
 | Command                                  | Description                                                                    |
 | ---------------------------------------- | ------------------------------------------------------------------------------ |
-| Peacock: Change Live Share Color (Host)  | Prompts user to select a color for Live Share Host session from the Favorites  |
-| Peacock: Change Live Share Color (Guest) | Prompts user to select a color for Live Share Guest session from the Favorites |
+| Better Peacock: Change Live Share Color (Host)  | Prompts user to select a color for Live Share Host session from the Favorites  |
+| Better Peacock: Change Live Share Color (Guest) | Prompts user to select a color for Live Share Guest session from the Favorites |
 
 When a [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare&wt.mc_id=vscodepeacock-github-jopapa) session is started, the selected workspace color will be applied. When the session is finished, the workspace color is reverted back to the previous one (if set).
 
@@ -270,7 +374,7 @@ See the [CHANGELOG](/changelog) latest changes.
 
 ### Peacock commands are not appearing
 
-Peacock only works if a workspace is open in Visual Studio Code because it needs the settings.json file to work. When it is not in a workspace, all commands are hidden and disabled except for the "Peacock: Open Documentation" command.
+Peacock only works if a workspace is open in Visual Studio Code because it needs the settings.json file to work. When it is not in a workspace, all commands are hidden and disabled except for the "Better Peacock: Open Documentation" command.
 
 ### What does Peacock affect
 
@@ -291,7 +395,7 @@ User selects a color, then later changes which elements are affected.
 
 1. User chooses "surprise me" and sets the color to #ff0000
 1. Peacock saves #ff0000 in memory as the most recently used color
-1. User goes to settings and unchecks the "Peacock: Affect StatusBar"
+1. User goes to settings and unchecks the "Better Peacock: Affect StatusBar"
 1. Peacock listens to this change, clears all colors and reapplies the #ff0000
 
 #### Example 2
@@ -300,7 +404,7 @@ User opens VS Code, already has colors in their workspace, and immediately chang
 
 1. User opens VS Code
 1. Workspace colors are set to #369
-1. User goes to settings and unchecks the "Peacock: Affect StatusBar"
+1. User goes to settings and unchecks the "Better Peacock: Affect StatusBar"
 1. Peacock listens to this change, clears all colors and reapplies the #369
 
 #### Example 3
@@ -310,10 +414,12 @@ User opens VS Code, has no colors in workspace, and immediately changes which el
 1. User opens VS Code
 1. No workspace colors are set
 1. Peacock's most recently used color is not set
-1. User goes to settings and unchecks the "Peacock: Affect StatusBar"
+1. User goes to settings and unchecks the "Better Peacock: Affect StatusBar"
 1. Peacock listens to this change, however no colors are applied
 
 ### How does title bar coloring work
+
+Peacock contributes `${rootName} [VS Code]` as VS Code's default native window title. This makes Mission Control's hover label concise and project-focused. A user, remote, workspace, or folder value for VS Code's `window.title` setting takes precedence, so Peacock never writes over an explicit title preference. Removing Peacock also removes its contributed default.
 
 The VS Code Title Bar style can be configured to be custom or native with the `window.titleBarStyle` setting. When operating in native mode, Peacock is unable to colorize the Title Bar because VS Code defers Title Bar management to the OS. In order to leverage the Affect Title Bar setting to colorize the Title Bar, the `window.titleBarStyle` must be set to custom.
 
@@ -390,15 +496,11 @@ Then you can run the debugger for the launch configuration `Run Extension`. Set 
 
 ## Badges
 
-[![Badge for version for Visual Studio Code extension johnpapa.vscode-peacock](https://img.shields.io/visual-studio-marketplace/v/johnpapa.vscode-peacock?color=blue&style=flat-square&logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&wt.mc_id=vscodepeacock-github-jopapa)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/johnpapa.vscode-peacock?color=blue&style=flat-square)](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&wt.mc_id=vscodepeacock-github-jopapa)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/johnpapa.vscode-peacock?color=blue&style=flat-square)](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock&wt.mc_id=vscodepeacock-github-jopapa)
+[![CI](https://github.com/chrismeehan20/better-peacock/actions/workflows/ci.yml/badge.svg)](https://github.com/chrismeehan20/better-peacock/actions/workflows/ci.yml)
 [![Live Share](https://img.shields.io/badge/Live_Share-enabled-8F80CF.svg?color=blue&style=flat-square&logo=visual-studio-code)](https://visualstudio.microsoft.com/services/live-share/?wt.mc_id=vscodepeacock-github-jopapa)
 
 [![The MIT License](https://img.shields.io/badge/license-MIT-orange.svg?color=blue&style=flat-square)](http://opensource.org/licenses/MIT)
 [![All Contributors](https://img.shields.io/badge/all_contributors-15-blue.svg?style=flat-square)](#contributors)
-
-[![Build Status](https://johnpapa.visualstudio.com/vscode-peacock/_apis/build/status/VS%20Code%20Peacock%20Extension?branchName=main)](https://johnpapa.visualstudio.com/vscode-peacock/_build/latest?definitionId=3&branchName=main)
 
 ## Resources
 

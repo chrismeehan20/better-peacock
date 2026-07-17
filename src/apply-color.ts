@@ -9,7 +9,7 @@ import {
   updatePeacockRemoteColor,
 } from './configuration';
 import { Logger } from './logging';
-import { updateStatusBar } from './statusbar';
+import { PeacockStatusBarContext, updateStatusBar } from './statusbar';
 import {
   isValidColorInput,
   getBackgroundColorHex,
@@ -60,7 +60,12 @@ function mergeColorCustomizations(
   return mergedCustomizations;
 }
 
-export async function applyColor(input: string) {
+export interface ApplyColorOptions {
+  statusBarColor?: string;
+  statusBarContext?: PeacockStatusBarContext;
+}
+
+export async function applyColor(input: string, options: ApplyColorOptions = {}) {
   /**************************************************************
    * This is the heart of Peacock logic to apply the colors.
    *
@@ -84,12 +89,21 @@ export async function applyColor(input: string) {
   // Get updated Peacock colors.
   const updatedColors = prepareColors(color);
 
+  if (options.statusBarColor && isValidColorInput(options.statusBarColor)) {
+    const statusBarColors = prepareColors(getBackgroundColorHex(options.statusBarColor));
+    Object.keys(statusBarColors)
+      .filter(setting => setting.indexOf('statusBar') === 0)
+      .forEach(setting => {
+        updatedColors[setting] = statusBarColors[setting];
+      });
+  }
+
   const colorCustomizations = mergeColorCustomizations(existingColors, updatedColors);
 
   await updateWorkspaceConfiguration(colorCustomizations);
-  updateStatusBar();
+  updateStatusBar(options.statusBarContext || { color });
 
-  Logger.info(`${extensionShortName}: Peacock is now using ${color}`);
+  Logger.info(`${extensionShortName}: Better Peacock is now using ${color}`);
 
   return color;
 }

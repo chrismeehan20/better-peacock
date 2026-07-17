@@ -1,6 +1,6 @@
-# Peacock *for Visual Studio Code*
+# Better Peacock *for Visual Studio Code*
 
-> Subtly change the color of your Visual Studio Code workspace. Ideal when you have multiple VS Code instances, use Visual Studio Live Share, or use VS Code's Remote features.
+> Automatically give each Visual Studio Code project, repository, and protected branch a recognizable color.
 
 ![Peacock Hero](assets/hero.png)
 
@@ -12,9 +12,9 @@
 
 ## Quick Start
 
-1. Install Peacock from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=johnpapa.vscode-peacock)
+1. Package Better Peacock with `npm run package` and install the generated VSIX
 2. Open the command palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
-3. Type **Peacock: Change to a favorite color**
+3. Type **Better Peacock: Change to a favorite color**
 4. Pick a color and enjoy!
 
 [Get Started →](guide/)

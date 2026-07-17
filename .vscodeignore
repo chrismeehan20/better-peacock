@@ -28,6 +28,9 @@ out-cov/
 .eslintrc
 .prettierrc
 docs
-testworkspace
+e2e/**
+playwright-report/**
+test-results/**
+testworkspace/**
 webpack.config.js
 .prettierrc.js
