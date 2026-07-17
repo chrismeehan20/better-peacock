@@ -11,6 +11,7 @@ All notable changes to the code will be documented in this file.
 - Added exact and glob-based branch status bar overrides for protected-branch warnings
 - Added live Git branch/remote and project-icon refresh, plus automatic-color enable, disable, and refresh commands
 - Enhanced the Peacock status item with source details, the current branch, and deterministic branch foreground colors
+- Added a concise `${rootName} [VS Code]` native window-title default for clearer macOS Mission Control labels
 
 ### Tests & Documentation
 

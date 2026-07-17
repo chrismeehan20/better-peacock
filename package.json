@@ -205,6 +205,9 @@
         }
       ]
     },
+    "configurationDefaults": {
+      "window.title": "${rootName} [VS Code]"
+    },
     "configuration": {
       "properties": {
         "peacock.squigglyBeGone": {

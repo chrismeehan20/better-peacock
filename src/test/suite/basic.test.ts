@@ -67,6 +67,11 @@ suite('Basic Extension Tests', () => {
     }
   });
 
+  test('Window title identifies the repository in native window views', () => {
+    const defaults = extension.packageJSON.contributes.configurationDefaults;
+    assert.equal(defaults['window.title'], '${rootName} [VS Code]');
+  });
+
   test('AffectedSettings exist in package.json', () => {
     // let extension = getExtension() as vscode.Extension<any>;
     const config: IConfiguration = extension.packageJSON.contributes.configuration;

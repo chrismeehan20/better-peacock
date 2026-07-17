@@ -42,6 +42,7 @@ Commands can be found in the command palette. Look for commands beginning with "
 - Integrates with [VS Code Remote](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack&wt.mc_id=vscodepeacock-github-jopapa).
 - Can automatically derive stable colors from a project icon, Git remote, or workspace identity.
 - Can warn when you switch to protected branches by overriding the status bar color.
+- Uses a concise `Repository [VS Code]` native window title so projects are easier to identify in macOS Mission Control and other system window views.
 
 ## Settings
 
@@ -355,6 +356,8 @@ User opens VS Code, has no colors in workspace, and immediately changes which el
 1. Peacock listens to this change, however no colors are applied
 
 ### How does title bar coloring work
+
+Peacock contributes `${rootName} [VS Code]` as VS Code's default native window title. This makes Mission Control's hover label concise and project-focused. A user, remote, workspace, or folder value for VS Code's `window.title` setting takes precedence, so Peacock never writes over an explicit title preference. Removing Peacock also removes its contributed default.
 
 The VS Code Title Bar style can be configured to be custom or native with the `window.titleBarStyle` setting. When operating in native mode, Peacock is unable to colorize the Title Bar because VS Code defers Title Bar management to the OS. In order to leverage the Affect Title Bar setting to colorize the Title Bar, the `window.titleBarStyle` must be set to custom.
 
