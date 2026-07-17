@@ -115,7 +115,9 @@ function registerCommands() {
   });
   commands.registerCommand(Commands.disableAutomaticColor, async () => {
     await disableAutomaticColor();
-    await vscode.window.showInformationMessage('Automatic Better Peacock colors are disabled here.');
+    await vscode.window.showInformationMessage(
+      'Automatic Better Peacock colors are disabled here.',
+    );
   });
 }
 
