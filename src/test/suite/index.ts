@@ -24,7 +24,8 @@ export function run(): Promise<void> {
 
   const testsRoot = path.resolve(__dirname, '..');
 
-  return new Promise((c, e) => {
+  // Explicitly Promise<void> so resolving with no value type-checks.
+  return new Promise<void>((c, e) => {
     glob('**/**.test.js', { cwd: testsRoot }, (err: any, files: any) => {
       if (err) {
         return e(err);

@@ -2,7 +2,7 @@ import * as assert from 'assert';
 import { IPeacockSettings } from '../../models';
 import { setupTestSuite, teardownTestSuite, setupTest } from './lib/setup-teardown-test-suite';
 import { notify } from '../../notification';
-import sinon = require('sinon');
+import * as sinon from 'sinon';
 import { Logger } from '../../logging';
 
 suite('Notification Tests', () => {
