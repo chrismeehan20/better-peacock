@@ -41,7 +41,7 @@ async function main() {
       ],
     });
   } catch (err) {
-    console.error('Failed to run tests');
+    console.error('Failed to run tests', err instanceof Error ? err.stack : err);
     process.exit(1);
   }
 }

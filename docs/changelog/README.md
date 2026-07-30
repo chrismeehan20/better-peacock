@@ -37,6 +37,19 @@ All notable changes to the code will be documented in this file.
 - Added coverage for hook-liveness evaluation, including the case where an agent runs after installation without firing a single hook
 - Documented automatic source priority, protected branch examples, and the new settings and commands
 
+### Tooling
+
+- Upgraded TypeScript from 3.9 (August 2020) to 5.9.3, along with the ESLint stack it is coupled to: ESLint 6 to 8, `@typescript-eslint` 2 to 8, and `eslint-config-prettier` 6 to 9
+- Upgraded `@types/node` from 12.12.16 to 20, matching the Node version CI runs
+- Removed the `@types/vscode` pin, which existed only because TypeScript 3.9 could not parse newer type definitions; it now floats consistently with `engines.vscode`
+- Replaced `extends: ["prettier/@typescript-eslint"]` with `"prettier"`, merged upstream in eslint-config-prettier 8.0.0, and dropped five rule entries removed in `@typescript-eslint` v8
+- Fixed the code that stricter checks legitimately flagged rather than disabling the rules: `{}` narrowed to `object` where "any object" was meant, `require()`-style imports converted to ESM, and unused catch bindings either removed or actually used
+- The test runners now print the underlying error when a run fails to start; previously they discarded it, so a failing harness reported nothing at all
+
+#### Deliberately deferred: TypeScript 7
+
+TypeScript 7 is the native compiler rewrite, not an ordinary major. Measured against this codebase it produces 35 errors, roughly 30 of which share one root cause: stricter CommonJS/ES module interop makes `tinycolor2` report "has no call signatures". Every colour operation in the extension goes through `tinycolor2`, so the fix is a module-interop change with wide blast radius and no benefit that this release needs. Kept on TypeScript 5.9 (`^5.9.3` accepts 5.x patches only) and revisit deliberately.
+
 ## 4.2.5
 
 ### Docs & Infrastructure

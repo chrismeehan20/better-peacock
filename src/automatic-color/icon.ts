@@ -39,7 +39,10 @@ function isPng(bytes: Uint8Array) {
 }
 
 function decodePng(bytes: Uint8Array): PixelData {
-  const input = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+  // Copy into a fresh Uint8Array so the backing store is a plain ArrayBuffer.
+  // Reading `bytes.buffer` yields ArrayBufferLike, which may be a
+  // SharedArrayBuffer and is not assignable to UPNG's ArrayBuffer parameter.
+  const input = new Uint8Array(bytes).buffer;
   const image = UPNG.decode(input);
   const frames = UPNG.toRGBA8(image);
   return { data: new Uint8Array(frames[0]), width: image.width, height: image.height };

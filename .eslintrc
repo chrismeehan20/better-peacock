@@ -3,26 +3,23 @@
   "plugins": ["@typescript-eslint"],
   "extends": [
     "plugin:@typescript-eslint/recommended",
-    // "prettier",
-    "prettier/@typescript-eslint",
-    // "plugin:prettier/recommended" Enables eslint-plugin-prettier
-    // and displays prettier errors as ESLint errors.
-    // Make sure this is always the last configuration in the extends array.
-    // "plugin:prettier/recommended"
+    // "prettier/@typescript-eslint" was merged into "prettier" in
+    // eslint-config-prettier 8.0.0.
+    "prettier"
+    // Prettier is enforced by the `pretty` script and the pre-commit hook
+    // rather than through ESLint, so eslint-plugin-prettier stays unused.
   ],
   "parserOptions": {
     "project": "./tsconfig.json"
   },
   "rules": {
+    // Rules removed in @typescript-eslint v8 are intentionally absent:
+    // no-parameter-properties, no-angle-bracket-type-assertion,
+    // no-object-literal-type-assertion, interface-name-prefix, and camelcase.
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-parameter-properties": "off",
-    "@typescript-eslint/no-angle-bracket-type-assertion": "off",
-    "@typescript-eslint/no-object-literal-type-assertion": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/interface-name-prefix": "off",
-    "@typescript-eslint/camelcase": "off",
     "@typescript-eslint/explicit-member-accessibility": "off"
   }
 }
