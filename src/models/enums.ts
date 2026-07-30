@@ -58,6 +58,7 @@ export enum Commands {
   disableAutomaticColor = 'peacock.disableAutomaticColor',
   installAgentBeacon = 'peacock.installAgentBeacon',
   lighten = 'peacock.lighten',
+  openAgentBeaconProject = 'peacock.openAgentBeaconProject',
   removeAllColors = 'peacock.removeAllColors',
   resetWorkspaceColors = 'peacock.resetWorkspaceColors',
   refreshAutomaticColor = 'peacock.refreshAutomaticColor',
@@ -66,6 +67,7 @@ export enum Commands {
   showAttentionQueue = 'peacock.showAttentionQueue',
   showDocumentation = 'peacock.docs',
   uninstallAgentBeacon = 'peacock.uninstallAgentBeacon',
+  verifyAgentBeacon = 'peacock.verifyAgentBeacon',
 }
 
 export enum ElementNames {

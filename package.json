@@ -19,7 +19,7 @@
     "theme": "dark"
   },
   "engines": {
-    "vscode": "^1.49.0"
+    "vscode": "^1.74.0"
   },
   "categories": [
     "Other"
@@ -127,8 +127,19 @@
         "category": "Better Peacock"
       },
       {
+        "command": "peacock.verifyAgentBeacon",
+        "title": "Verify Agent Beacon Hooks",
+        "category": "Better Peacock"
+      },
+      {
         "command": "peacock.showAttentionQueue",
         "title": "Show Attention Queue",
+        "category": "Better Peacock",
+        "icon": "$(list-unordered)"
+      },
+      {
+        "command": "peacock.openAgentBeaconProject",
+        "title": "Open Agent Beacon Project",
         "category": "Better Peacock"
       },
       {
@@ -228,10 +239,81 @@
           "command": "peacock.uninstallAgentBeacon"
         },
         {
+          "command": "peacock.verifyAgentBeacon"
+        },
+        {
           "command": "peacock.showAttentionQueue"
+        },
+        {
+          "command": "peacock.openAgentBeaconProject",
+          "when": "false"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "peacock.verifyAgentBeacon",
+          "when": "view == peacock.attentionQueue",
+          "group": "navigation"
         }
       ]
     },
+    "views": {
+      "explorer": [
+        {
+          "id": "peacock.attentionQueue",
+          "name": "Agent Attention Queue",
+          "when": "config.peacock.agentBeaconEnabled"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "peacock.attentionQueue",
+        "contents": "No agents are reporting state yet.\n\nAgent Beacon reads lifecycle hooks from Codex and Claude Code. Install the hooks to start tracking which projects need input.\n\n[Install Agent Beacon Hooks](command:peacock.installAgentBeacon)\n\n[Verify Hooks](command:peacock.verifyAgentBeacon)"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "peacock.agentBeacon",
+        "title": "Track your background agents",
+        "description": "Show which projects need your input across every VS Code window, driven by Codex and Claude Code lifecycle hooks.",
+        "steps": [
+          {
+            "id": "peacock.agentBeacon.install",
+            "title": "Install the hooks",
+            "description": "Choose Codex, Claude Code, or both. Better Peacock backs up your existing hook files and merges its handlers alongside them, so your other hooks keep working.\n\n[Install Agent Beacon Hooks](command:peacock.installAgentBeacon)",
+            "media": {
+              "markdown": "resources/walkthrough/install.md"
+            },
+            "completionEvents": [
+              "onSettingChanged:peacock.agentBeaconEnabled"
+            ]
+          },
+          {
+            "id": "peacock.agentBeacon.trust",
+            "title": "Trust the hooks in Codex",
+            "description": "Codex will not run a hook it has not been told to trust. Run /hooks in Codex, approve the Better Peacock entries, then verify.\n\n[Verify Agent Beacon Hooks](command:peacock.verifyAgentBeacon)",
+            "media": {
+              "markdown": "resources/walkthrough/trust.md"
+            },
+            "completionEvents": [
+              "onCommand:peacock.verifyAgentBeacon"
+            ]
+          },
+          {
+            "id": "peacock.agentBeacon.queue",
+            "title": "Watch the attention queue",
+            "description": "The Agent Attention Queue appears in the Explorer sidebar and lists every project that needs input, is ready, or failed. Selecting a project opens it in a new window.\n\n[Show Attention Queue](command:peacock.showAttentionQueue)",
+            "media": {
+              "markdown": "resources/walkthrough/queue.md"
+            },
+            "completionEvents": [
+              "onCommand:peacock.showAttentionQueue"
+            ]
+          }
+        ]
+      }
+    ],
     "configurationDefaults": {
       "window.title": "${rootName} [VS Code]"
     },
@@ -669,7 +751,7 @@
     "@types/mocha": "^7.0.2",
     "@types/node": "12.12.16",
     "@types/sinon": "^7.5.2",
-    "@types/vscode": "^1.49.0",
+    "@types/vscode": "~1.61.0",
     "@types/upng-js": "^2.1.5",
     "@types/webpack-env": "^1.18.8",
     "@typescript-eslint/eslint-plugin": "^2.34.0",

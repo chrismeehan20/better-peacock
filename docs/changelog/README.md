@@ -15,6 +15,17 @@ All notable changes to the code will be documented in this file.
 - Added a concise `${rootName} [VS Code]` native window-title default for clearer macOS Mission Control labels
 - Added opt-in Agent Beacon lifecycle integration for Codex and Claude Code with reversible, backup-first hook setup
 - Added a cross-project Attention Queue in the VS Code Command Palette
+- Added an Agent Attention Queue view in the Explorer sidebar so agent state is visible without invoking a command
+- Added a Getting Started walkthrough that sequences hook installation, Codex trust, and verification
+- Added Agent Beacon hook-liveness detection and a Verify Agent Beacon Hooks command, so hooks that are installed but never fire are reported instead of appearing successful
+
+### Fixes
+
+- Agent Beacon installation no longer reports success for Codex when Codex has not been told to trust the new hook definitions, which left the Codex half of the feature silently inactive
+- Agent Beacon hooks now run an absolute Node path resolved at install time instead of a bare `node`, so hooks no longer depend on the environment the agent happened to launch with; installation stops with an explanation when no Node executable can be found
+- Agent Beacon install messages now state the correct follow-up per agent, rather than telling Claude Code users to restart sessions they do not need to restart
+- Raised the declared minimum VS Code version to 1.74, matching the contribution points the extension actually uses
+- Pinned `@types/vscode` so a fresh install cannot pull a version the project's TypeScript is unable to parse
 - Added unobtrusive Git Risk indicators for conflicts, dirty files, and ahead/behind counts
 - Added explicit, opt-in Environment Guardrails for workspace, remote, branch, and Git-remote patterns
 - Replaced broad `*` activation with `onStartupFinished` and removed test artifacts from packaged VSIX files
@@ -23,6 +34,7 @@ All notable changes to the code will be documented in this file.
 
 - Added coverage for remote normalization, deterministic hashes, branch patterns, icon palettes, and status-bar-only branch overrides
 - Added coverage for hook merging/removal, state-only hook output, agent priority, Git Risk thresholds, and environment rule matching
+- Added coverage for hook-liveness evaluation, including the case where an agent runs after installation without firing a single hook
 - Documented automatic source priority, protected branch examples, and the new settings and commands
 
 ## 4.2.5

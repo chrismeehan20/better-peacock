@@ -77,9 +77,22 @@ Agent Beacon turns supported Codex and Claude Code lifecycle hooks into a compac
 - ready for review
 - failed
 
-Run **Better Peacock: Install Agent Beacon Hooks**, choose Codex, Claude Code, or both, and confirm the explicit configuration change. Better Peacock backs up existing hook files before merging its handlers. Codex asks you to review and trust new hooks with `/hooks`.
+**Requirements:** desktop VS Code (not the web build), and **Node.js installed locally**. Codex and Claude Code run the hook helper themselves, so they cannot use the Node runtime bundled with VS Code. Installation resolves an absolute path to your Node executable — so nvm, fnm, volta, and Homebrew installs all work — and refuses to write a hook it knows can never run.
 
-Run **Better Peacock: Show Attention Queue** from any VS Code window to list projects that need input, are ready, or failed. Selecting another project opens it in a new VS Code window. Agent Beacon writes state-only JSON to the operating system's temporary directory; it does not read or copy conversation transcripts.
+The guided way to set this up is the **Track your background agents** walkthrough, in VS Code's Getting Started page (`Help ▸ Get Started`, or search *Welcome* in the Command Palette). It installs the hooks, covers the Codex trust step, and checks itself off as you go.
+
+To do it by hand, run **Better Peacock: Install Agent Beacon Hooks** and choose Codex, Claude Code, or both. Existing hook files are backed up before Better Peacock's handlers are merged in.
+
+The two agents then differ:
+
+| | Claude Code | Codex |
+| --- | --- | --- |
+| Approval needed | No | **Yes — run `/hooks` and approve** |
+| Picks up new hooks | Automatically, no restart | Restart the session |
+
+**Codex silently skips any hook it has not been told to trust**, so without that approval the hooks look installed and never fire once. Trust is keyed to the hook definitions, so reinstalling invalidates it and needs approving again. **Better Peacock: Verify Agent Beacon Hooks** reports whether each agent's hooks have genuinely fired rather than merely been configured, and warns on its own if an agent runs without sending any events.
+
+Once installed, the **Agent Attention Queue** appears in the Explorer sidebar in every window, listing projects that need input, are ready, or failed; **Better Peacock: Show Attention Queue** is the keyboard-driven equivalent. Selecting another project opens it in a new VS Code window. Agent Beacon writes state-only JSON to the operating system's temporary directory; it does not read or copy conversation transcripts.
 
 ## Git Risk and Environment Guardrails
 
