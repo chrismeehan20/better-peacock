@@ -5,14 +5,36 @@ import {
   getAgentBeaconPollInterval,
   getAgentBeaconStaleMinutes,
 } from '../configuration';
+import { Logger } from '../logging';
 import { Commands, StandardSettings } from '../models';
-import { installAgentBeaconHooks, uninstallAgentBeaconHooks } from './setup';
-import { AgentBeaconState, AgentBeaconStateName } from './types';
+import {
+  evaluateHookLiveness,
+  getHomeDirectory,
+  initializeLivenessStore,
+  readAgentActivity,
+  readLivenessState,
+  recordHookEvent,
+  recordWarning,
+  updateLivenessState,
+} from './liveness';
+import {
+  installAgentBeaconHooks,
+  providerDisplayName,
+  uninstallAgentBeaconHooks,
+  verifyAgentBeaconHooks,
+} from './setup';
+import { AgentBeaconTreeProvider } from './tree';
+import { AgentBeaconProvider, AgentBeaconState, AgentBeaconStateName } from './types';
 
 let statusBarItem: vscode.StatusBarItem | undefined;
+let treeProvider: AgentBeaconTreeProvider | undefined;
 let pollHandle: NodeJS.Timeout | undefined;
 let pollInProgress = false;
 let lastNotificationKey = '';
+let lastLivenessCheck = 0;
+
+/** Checking hook liveness means touching the agents' session directories, so it runs far less often than the state poll. */
+const livenessCheckInterval = 5 * 60 * 1000;
 
 const statePriority: { [state in AgentBeaconStateName]: number } = {
   'needs-input': 4,
@@ -191,6 +213,70 @@ async function notifyForTransition(state: AgentBeaconState | undefined) {
   }
 }
 
+/**
+ * Every observed state record is proof that the provider's hooks ran. Recording
+ * that is what lets Better Peacock tell "installed and working" apart from
+ * "installed and silently ignored" — the failure mode Codex hits when its hook
+ * definitions have not been trusted.
+ */
+async function recordObservedHookEvents(states: AgentBeaconState[]) {
+  const newest = new Map<AgentBeaconProvider, number>();
+  states.forEach(state => {
+    const previous = newest.get(state.provider) || 0;
+    if (state.timestamp > previous) {
+      newest.set(state.provider, state.timestamp);
+    }
+  });
+  for (const [provider, timestamp] of newest) {
+    await updateLivenessState(state => recordHookEvent(state, provider, timestamp));
+  }
+}
+
+/**
+ * Warns once per provider when the agent has demonstrably run since hooks were
+ * installed without producing a single hook event.
+ */
+async function checkHookLiveness() {
+  const home = getHomeDirectory();
+  if (!home || Date.now() - lastLivenessCheck < livenessCheckInterval) {
+    return;
+  }
+  lastLivenessCheck = Date.now();
+
+  const stored = readLivenessState();
+  for (const provider of ['codex', 'claude'] as AgentBeaconProvider[]) {
+    if ((stored.warnedFor || []).includes(provider)) {
+      continue;
+    }
+    // Only a provider that is installed and has never fired is worth the cost
+    // of scanning session files; 'live' and 'not-installed' are decided from
+    // stored timestamps alone.
+    if (evaluateHookLiveness(stored, provider, undefined) !== 'awaiting-first-event') {
+      continue;
+    }
+    const activityAt = await readAgentActivity(home, provider);
+    if (evaluateHookLiveness(stored, provider, activityAt) !== 'silent') {
+      continue;
+    }
+
+    await updateLivenessState(state => recordWarning(state, provider));
+    Logger.info(
+      `Better Peacock: ${providerDisplayName(
+        provider,
+      )} ran after Agent Beacon installation but sent no hook events.`,
+    );
+    const choice = await vscode.window.showWarningMessage(
+      `Agent Beacon: ${providerDisplayName(
+        provider,
+      )} has run since its hooks were installed but has not sent a single hook event.`,
+      'Diagnose',
+    );
+    if (choice === 'Diagnose') {
+      await verifyAgentBeaconHooks();
+    }
+  }
+}
+
 async function poll() {
   if (pollInProgress) {
     return;
@@ -199,12 +285,17 @@ async function poll() {
   try {
     if (!getAgentBeaconEnabled()) {
       updateStatusBar(undefined);
+      treeProvider?.setStates([]);
       return;
     }
     const roots = (vscode.workspace.workspaceFolders || []).map(folder => folder.uri.fsPath);
-    const state = selectPrimaryAgentState(await readAgentBeaconStates(), roots);
+    const states = await readAgentBeaconStates();
+    const state = selectPrimaryAgentState(states, roots);
     updateStatusBar(state);
+    treeProvider?.setStates(states);
+    await recordObservedHookEvents(states);
     await notifyForTransition(state);
+    await checkHookLiveness();
   } finally {
     pollInProgress = false;
   }
@@ -281,29 +372,37 @@ export async function showAttentionQueue() {
     },
   );
   if (item) {
-    const currentRoots = (vscode.workspace.workspaceFolders || []).map(folder => folder.uri.fsPath);
-    if (!currentRoots.some(root => stateBelongsToWorkspace(item.state, root))) {
-      await vscode.commands.executeCommand(
-        'vscode.openFolder',
-        vscode.Uri.file(item.state.workspace),
-        {
-          forceNewWindow: true,
-        },
-      );
-    }
+    await openAgentBeaconProject(item.state);
   }
 }
 
+/** Opens the project in a new window, unless this window already holds it. */
+export async function openAgentBeaconProject(state: AgentBeaconState) {
+  const currentRoots = (vscode.workspace.workspaceFolders || []).map(folder => folder.uri.fsPath);
+  if (currentRoots.some(root => stateBelongsToWorkspace(state, root))) {
+    return;
+  }
+  await vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.file(state.workspace), {
+    forceNewWindow: true,
+  });
+}
+
 export function initializeAgentBeacon(context: vscode.ExtensionContext) {
+  initializeLivenessStore(context.globalState);
   statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 200);
   statusBarItem.name = 'Better Peacock Agent Beacon';
+  treeProvider = new AgentBeaconTreeProvider();
   context.subscriptions.push(
     statusBarItem,
+    treeProvider,
+    vscode.window.registerTreeDataProvider('betterPeacock.attentionQueue', treeProvider),
     vscode.commands.registerCommand(Commands.installAgentBeacon, () =>
       installAgentBeaconHooks(context),
     ),
     vscode.commands.registerCommand(Commands.uninstallAgentBeacon, uninstallAgentBeaconHooks),
+    vscode.commands.registerCommand(Commands.verifyAgentBeacon, verifyAgentBeaconHooks),
     vscode.commands.registerCommand(Commands.showAttentionQueue, showAttentionQueue),
+    vscode.commands.registerCommand(Commands.openAgentBeaconProject, openAgentBeaconProject),
     vscode.workspace.onDidChangeConfiguration(event => {
       if (
         event.affectsConfiguration(`peacock.${StandardSettings.AgentBeaconEnabled}`) ||
@@ -325,5 +424,8 @@ export function initializeAgentBeacon(context: vscode.ExtensionContext) {
   startPolling();
 }
 
+export * from './liveness';
+export * from './node-runtime';
 export * from './setup';
+export * from './tree';
 export * from './types';

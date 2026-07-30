@@ -116,6 +116,24 @@ The branch warning changes only the status bar; the project color remains on the
 
 ### Agent Beacon
 
+#### Requirements and limitations
+
+| Requirement | Why |
+| --- | --- |
+| Desktop VS Code | The hook files live in your home directory; the web build has no access to it. |
+| Node.js installed locally | The helper is a Node script that Codex and Claude Code execute themselves, so VS Code's bundled runtime is not available to them. |
+
+Installation resolves an **absolute** path to a Node executable — searching `PATH` first, then common install directories, then nvm/fnm/volta version directories — and bakes it into the hook command. That keeps hooks working regardless of the environment the agent launched with, which is the usual reason version-manager installs fail. If no Node executable can be found, installation stops and says so instead of writing a hook that cannot run.
+
+Two known limitations:
+
+- **Remote development.** Hooks and beacon state live on whichever machine the agent runs on. If the agent runs in a container, WSL, or over SSH while the extension runs elsewhere, they will not see each other.
+- **Claude Code version.** The `agent_needs_input` and `agent_completed` notification matchers require Claude Code 2.1.198 or later. On older versions those two states simply never arrive; the rest still works.
+
+#### Installing
+
+The guided path is the **Track your background agents** walkthrough on VS Code's Getting Started page, which sequences installation, the Codex trust step, and verification, and marks each step complete as it happens.
+
 Run **Better Peacock: Install Agent Beacon Hooks** and choose Codex, Claude Code, or both. The command:
 
 1. asks for explicit confirmation;
@@ -126,11 +144,35 @@ Run **Better Peacock: Install Agent Beacon Hooks** and choose Codex, Claude Code
 
 The helper records only the provider, lifecycle state, workspace path, event name, session ID, optional notification message, and timestamp. It never reads conversation transcripts or project files. Hook errors exit successfully so Agent Beacon cannot block an agent turn.
 
-Codex requires reviewing and trusting new hook definitions with `/hooks`. Restart active Codex or Claude Code sessions after installation. Use **Better Peacock: Uninstall Agent Beacon Hooks** to surgically remove Better Peacock handlers while preserving other hooks and settings.
+Use **Better Peacock: Uninstall Agent Beacon Hooks** to surgically remove Better Peacock handlers while preserving other hooks and settings.
+
+#### What each agent needs after installation
+
+| | Claude Code | Codex |
+| --- | --- | --- |
+| Approval step | None | **Run `/hooks` and approve the entries** |
+| Picking up new hooks | Automatic — it watches the settings file | Restart the session |
+
+**Claude Code requires nothing extra.** Hooks in `~/.claude/settings.json` run without any trust prompt at any scope, and its file watcher picks up changes mid-session. (Enterprise administrators can restrict hooks with the `allowManagedHooksOnly` policy, which would block this.)
+
+**Codex requires approval.** Writing `~/.codex/hooks.json` is not sufficient on its own: Codex records trust for hook definitions separately from the definitions themselves, and silently ignores any hook it has not been told to trust — so hooks can be present and correct while never running once. Because trust is keyed to the hook definitions, reinstalling or changing hooks invalidates it and requires approving them again.
+
+#### Verifying that hooks actually fire
+
+**Better Peacock: Verify Agent Beacon Hooks** reports observed behaviour rather than configuration. For each provider it distinguishes:
+
+| Result | Meaning |
+| --- | --- |
+| hooks not installed | Better Peacock has not written hooks for this provider. |
+| waiting for the first event | Installed, but the agent has not run since — nothing to conclude yet. |
+| hooks are firing | Hook events have arrived since installation. |
+| ran without sending events | The agent demonstrably ran after installation and produced no events. Something is wrong; for Codex this is almost always missing trust. |
+
+Better Peacock also warns once per provider on its own when it reaches that last state, so a silently untrusted hook set surfaces instead of being mistaken for a working one. The check compares hook-event history against the agent's own session files, so it never guesses from elapsed time alone.
 
 ### Attention Queue
 
-Run **Better Peacock: Show Attention Queue** in the Command Palette from any VS Code window. The quick-pick reads the shared local state directory and lists projects whose agent needs input, is ready, or failed. Selecting a project opens it in a new VS Code window. Running agents are summarized only when nothing needs attention.
+The **Agent Attention Queue** view appears in the Explorer sidebar whenever `peacock.agentBeaconEnabled` is on, listing every project reporting agent state in any window. **Better Peacock: Show Attention Queue** opens the same information as a quick-pick for keyboard-driven use, and summarizes running agents when nothing needs attention. Both read the shared local state directory, and selecting a project opens it in a new VS Code window unless the current window already holds it.
 
 ### Git Risk
 
@@ -274,6 +316,7 @@ There are key bindings for the lighten command `alt+cmd+=` and for darken comman
 | Better Peacock: Refresh Automatic Workspace Color      | Re-runs icon, Git remote, workspace, and protected-branch detection                                                                |
 | Better Peacock: Install Agent Beacon Hooks              | Backs up and merges supported Codex and Claude Code lifecycle hooks                                                                |
 | Better Peacock: Uninstall Agent Beacon Hooks            | Removes Better Peacock hook handlers while preserving other configuration                                                         |
+| Better Peacock: Verify Agent Beacon Hooks               | Reports whether each agent's hooks are actually firing, and how to fix them when they are not                                       |
 | Better Peacock: Show Attention Queue                    | Lists projects whose supported coding agent needs attention or is ready                                                            |
 
 ## Keyboard Shortcuts

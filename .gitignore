@@ -11,6 +11,7 @@ xunit.xml
 docs/.vuepress/.*
 .DS_Store
 .env
+.vscode/settings.json
 # Playwright
 playwright-report/
 test-results/

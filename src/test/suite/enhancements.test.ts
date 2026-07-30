@@ -6,6 +6,16 @@ import * as path from 'path';
 import { addAgentBeaconHooks, AgentBeaconState, removeAgentBeaconHooks } from '../../agent-beacon';
 import { selectPrimaryAgentState } from '../../agent-beacon';
 import {
+  AgentBeaconLivenessState,
+  evaluateHookLiveness,
+  forgetInstall,
+  hookSettleMilliseconds,
+  recordHookEvent,
+  recordInstall,
+  recordWarning,
+} from '../../agent-beacon';
+import { nodeExecutableCandidates } from '../../agent-beacon';
+import {
   environmentPatternMatches,
   resolveEnvironmentGuardrail,
 } from '../../environment-guardrails';
@@ -73,6 +83,76 @@ suite('Better Peacock Enhancements', () => {
     assert.ok(!JSON.stringify(removed).includes('better-peacock/agent-beacon.cjs'));
   });
 
+  test('quotes an absolute Node path into the hook command', () => {
+    const configuration = addAgentBeaconHooks(
+      {},
+      'codex',
+      '/home/me/.better-peacock/agent-beacon.cjs',
+      '/home/me/.nvm/versions/node/v22.18.0/bin/node',
+    );
+    const command =
+      configuration.hooks &&
+      configuration.hooks.Stop &&
+      configuration.hooks.Stop[0].hooks[0].command;
+    // The absolute path is what makes the hook independent of the PATH the
+    // agent launched with.
+    assert.equal(
+      command,
+      '"/home/me/.nvm/versions/node/v22.18.0/bin/node" "/home/me/.better-peacock/agent-beacon.cjs" codex',
+    );
+  });
+
+  test('still recognizes its own hooks when the Node path changes', () => {
+    const installed = addAgentBeaconHooks(
+      {},
+      'codex',
+      '/home/me/.better-peacock/agent-beacon.cjs',
+      '/usr/local/bin/node',
+    );
+    // A Node upgrade changes the command string; removal keys off the helper
+    // path, so uninstall must still find it.
+    const removed = removeAgentBeaconHooks(
+      addAgentBeaconHooks(
+        installed,
+        'codex',
+        '/home/me/.better-peacock/agent-beacon.cjs',
+        '/opt/homebrew/bin/node',
+      ),
+    );
+    assert.ok(!JSON.stringify(removed).includes('agent-beacon.cjs'));
+  });
+
+  test('prefers PATH for Node and falls back to common install directories', () => {
+    const candidates = nodeExecutableCandidates(
+      '/home/me/.nvm/versions/node/v22.18.0/bin:/usr/bin',
+      'darwin',
+      '/home/me',
+    );
+    assert.equal(candidates[0], '/home/me/.nvm/versions/node/v22.18.0/bin/node');
+    assert.ok(candidates.includes('/usr/bin/node'));
+    assert.ok(candidates.includes('/opt/homebrew/bin/node'));
+    assert.ok(candidates.includes('/home/me/.volta/bin/node'));
+    // Duplicates would mean redundant stat calls on every install.
+    assert.equal(new Set(candidates).size, candidates.length);
+  });
+
+  test('builds Windows Node candidates with the right separators', () => {
+    const candidates = nodeExecutableCandidates(
+      'C:\\tools\\node;C:\\Windows\\System32',
+      'win32',
+      'C:\\Users\\me',
+    );
+    assert.equal(candidates[0], 'C:\\tools\\node\\node.exe');
+    assert.ok(candidates.includes('C:\\Program Files\\nodejs\\node.exe'));
+    assert.ok(candidates.every(candidate => candidate.endsWith('node.exe')));
+  });
+
+  test('tolerates an empty or missing PATH', () => {
+    assert.ok(nodeExecutableCandidates(undefined, 'linux', undefined).includes('/usr/bin/node'));
+    assert.ok(nodeExecutableCandidates('', 'linux', undefined).length > 0);
+    assert.ok(nodeExecutableCandidates('::', 'linux', undefined).every(entry => entry.length > 1));
+  });
+
   test('adds Claude-specific notification and failure hooks', () => {
     const configuration = addAgentBeaconHooks(
       {},
@@ -81,6 +161,90 @@ suite('Better Peacock Enhancements', () => {
     );
     assert.ok(configuration.hooks && configuration.hooks.Notification);
     assert.ok(configuration.hooks && configuration.hooks.StopFailure);
+  });
+
+  test('treats installed hooks as unproven until an event arrives', () => {
+    const state = recordInstall({}, 'codex', 1000);
+    assert.equal(evaluateHookLiveness({}, 'codex', undefined), 'not-installed');
+    // No evidence the agent ran, so silence says nothing either way.
+    assert.equal(evaluateHookLiveness(state, 'codex', undefined), 'awaiting-first-event');
+    assert.equal(evaluateHookLiveness(state, 'codex', 500), 'awaiting-first-event');
+  });
+
+  test('reports silent hooks when the agent ran after installation without firing', () => {
+    // The real failure this guards against: Codex hooks written to
+    // ~/.codex/hooks.json but never trusted, so a full session produces
+    // no hook events at all while installation looks successful.
+    const state = recordInstall({}, 'codex', 1000);
+    const ranLater = 1000 + hookSettleMilliseconds + 1;
+    assert.equal(evaluateHookLiveness(state, 'codex', ranLater), 'silent');
+
+    const fired = recordHookEvent(state, 'codex', 1500);
+    assert.equal(evaluateHookLiveness(fired, 'codex', ranLater), 'live');
+  });
+
+  test('does not blame hooks for a session that straddles installation', () => {
+    const state = recordInstall({}, 'codex', 1000);
+    assert.equal(
+      evaluateHookLiveness(state, 'codex', 1000 + hookSettleMilliseconds - 1),
+      'awaiting-first-event',
+    );
+  });
+
+  test('tracks hook liveness per provider', () => {
+    let state: AgentBeaconLivenessState = recordInstall({}, 'codex', 1000);
+    state = recordInstall(state, 'claude', 1000);
+    state = recordHookEvent(state, 'claude', 2000);
+    const ranLater = 1000 + hookSettleMilliseconds + 1;
+    assert.equal(evaluateHookLiveness(state, 'claude', ranLater), 'live');
+    assert.equal(evaluateHookLiveness(state, 'codex', ranLater), 'silent');
+  });
+
+  test('reinstalling clears a past warning and invalidates earlier hook events', () => {
+    let state: AgentBeaconLivenessState = recordInstall({}, 'codex', 1000);
+    state = recordHookEvent(state, 'codex', 1500);
+    state = recordWarning(state, 'codex');
+    assert.deepEqual(state.warnedFor, ['codex']);
+
+    // Reinstalling rewrites the definitions, so Codex trust and therefore
+    // liveness must be proven again rather than inherited.
+    state = recordInstall(state, 'codex', 3000);
+    assert.deepEqual(state.warnedFor, []);
+    assert.equal(evaluateHookLiveness(state, 'codex', 3000 + hookSettleMilliseconds + 1), 'silent');
+  });
+
+  test('ignores out-of-order hook event timestamps', () => {
+    let state: AgentBeaconLivenessState = recordHookEvent({}, 'codex', 2000);
+    state = recordHookEvent(state, 'codex', 1000);
+    assert.equal(state.lastHookEventAt && state.lastHookEventAt.codex, 2000);
+  });
+
+  test('only an unproven install can become silent', () => {
+    // The poll loop skips the session-file scan unless the cheap check with no
+    // activity returns 'awaiting-first-event', so that result must be a
+    // precondition for 'silent' or a real fault would be skipped.
+    const cases: AgentBeaconLivenessState[] = [
+      {},
+      recordInstall({}, 'codex', 1000),
+      recordHookEvent(recordInstall({}, 'codex', 1000), 'codex', 2000),
+      recordHookEvent({}, 'codex', 2000),
+    ];
+    cases.forEach(state => {
+      const withoutActivity = evaluateHookLiveness(state, 'codex', undefined);
+      const withActivity = evaluateHookLiveness(state, 'codex', 9_999_999);
+      if (withActivity === 'silent') {
+        assert.equal(withoutActivity, 'awaiting-first-event');
+      }
+    });
+  });
+
+  test('forgetting an install leaves other providers intact', () => {
+    let state: AgentBeaconLivenessState = recordInstall({}, 'codex', 1000);
+    state = recordInstall(state, 'claude', 1000);
+    state = recordHookEvent(state, 'claude', 1500);
+    state = forgetInstall(state, 'codex');
+    assert.equal(evaluateHookLiveness(state, 'codex', 9999), 'not-installed');
+    assert.equal(evaluateHookLiveness(state, 'claude', 9999), 'live');
   });
 
   test('selects the highest-priority agent state for the current workspace', () => {
