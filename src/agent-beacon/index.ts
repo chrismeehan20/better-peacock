@@ -395,7 +395,7 @@ export function initializeAgentBeacon(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     statusBarItem,
     treeProvider,
-    vscode.window.registerTreeDataProvider('peacock.attentionQueue', treeProvider),
+    vscode.window.registerTreeDataProvider('betterPeacock.attentionQueue', treeProvider),
     vscode.commands.registerCommand(Commands.installAgentBeacon, () =>
       installAgentBeaconHooks(context),
     ),

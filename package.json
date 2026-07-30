@@ -252,7 +252,7 @@
       "view/title": [
         {
           "command": "peacock.verifyAgentBeacon",
-          "when": "view == peacock.attentionQueue",
+          "when": "view == betterPeacock.attentionQueue",
           "group": "navigation"
         }
       ]
@@ -260,7 +260,7 @@
     "views": {
       "explorer": [
         {
-          "id": "peacock.attentionQueue",
+          "id": "betterPeacock.attentionQueue",
           "name": "Agent Attention Queue",
           "when": "config.peacock.agentBeaconEnabled"
         }
@@ -268,7 +268,7 @@
     },
     "viewsWelcome": [
       {
-        "view": "peacock.attentionQueue",
+        "view": "betterPeacock.attentionQueue",
         "contents": "No agents are reporting state yet.\n\nAgent Beacon reads lifecycle hooks from Codex and Claude Code. Install the hooks to start tracking which projects need input.\n\n[Install Agent Beacon Hooks](command:peacock.installAgentBeacon)\n\n[Verify Hooks](command:peacock.verifyAgentBeacon)"
       }
     ],
