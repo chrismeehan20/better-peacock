@@ -2,7 +2,7 @@
   "name": "better-peacock",
   "displayName": "Better Peacock",
   "description": "Automatically color-code VS Code workspaces by project, repository, and branch so every window is easy to identify.",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "publisher": "chrismeehan20",
   "license": "SEE LICENSE IN LICENSE.md",
   "repository": {
@@ -420,7 +420,7 @@
         },
         "peacock.sideBarTintIntensity": {
           "type": "number",
-          "default": 30,
+          "default": 5,
           "minimum": 0,
           "maximum": 100,
           "description": "How strongly the workspace color tints the side bar and tab strip, as a percentage. Higher is easier to tell apart in Mission Control; lower is easier on the eyes. Ignored when peacock.affectSideBar is off."

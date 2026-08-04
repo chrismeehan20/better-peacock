@@ -11,13 +11,13 @@
   "workbench.statusBar.visible": true,
   "peacock.color": "1857a4",
   "workbench.colorCustomizations": {
-    "sash.hoverBorder": "#1857a4",
-    "activityBar.activeBackground": "#1857a4",
-    "activityBar.background": "#1857a4",
+    "sash.hoverBorder": "#1f6fd0",
+    "activityBar.activeBackground": "#1f6fd0",
+    "activityBar.background": "#1f6fd0",
     "activityBar.foreground": "#e7e7e7",
     "activityBar.inactiveForeground": "#e7e7e799",
-    "activityBarBadge.background": "#530c2c",
-    "activityBarBadge.foreground": "#e7e7e7",
+    "activityBarBadge.background": "#ee90bb",
+    "activityBarBadge.foreground": "#15202b",
     "titleBar.activeBackground": "#1857a4",
     "titleBar.activeForeground": "#e7e7e7",
     "titleBar.inactiveBackground": "#1857a499",
@@ -25,10 +25,14 @@
     "statusBar.background": "#1857a4",
     "statusBar.foreground": "#e7e7e7",
     "statusBarItem.hoverBackground": "#1f6fd0",
-    "statusBarItem.remoteBackground": "#1857a4",
+    "statusBarItem.remoteBackground": "#530c2c",
     "statusBarItem.remoteForeground": "#e7e7e7",
     "activityBar.activeBorder": "#530c2c",
     "commandCenter.border": "#e7e7e799",
-    "commandCenter.foreground": "#e7e7e7"
+    "commandCenter.foreground": "#e7e7e7",
+    "editorGroupHeader.tabsBackground": "#1f6fd00d",
+    "sideBar.background": "#1f6fd00d",
+    "sideBarSectionHeader.background": "#1f6fd00d",
+    "sideBarTitle.background": "#1f6fd00d"
   }
 }

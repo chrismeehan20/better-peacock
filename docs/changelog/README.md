@@ -28,6 +28,7 @@ All notable changes to the code will be documented in this file.
 - Raised the declared minimum VS Code version to 1.74, matching the contribution points the extension actually uses
 - Pinned `@types/vscode` so a fresh install cannot pull a version the project's TypeScript is unable to parse
 - Added unobtrusive Git Risk indicators for conflicts, dirty files, and ahead/behind counts
+- Lowered the default `peacock.sideBarTintIntensity` from 30 to 5. `sideBar.background` also paints the secondary side bar, where chat panels like Claude Code live, so a 30% wash of a saturated workspace color degraded text contrast across both side columns
 - Added explicit, opt-in Environment Guardrails for workspace, remote, branch, and Git-remote patterns
 - Replaced broad `*` activation with `onStartupFinished` and removed test artifacts from packaged VSIX files
 

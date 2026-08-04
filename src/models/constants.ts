@@ -17,7 +17,9 @@ export const defaultSaturation = 0.5;
 // Percent of the workspace color laid over the side bar and tab strip.
 // Low enough that the theme's own foreground colors stay readable,
 // high enough to read as a distinct window in Mission Control.
-export const defaultSideBarTintIntensity = 30;
+// sideBar.background also paints the secondary side bar (chat/aux panels),
+// so anything much above ~10 washes out text across half the window.
+export const defaultSideBarTintIntensity = 5;
 
 export const azureBlue = '#007fff';
 export const peacockGreen = '#42b883';
