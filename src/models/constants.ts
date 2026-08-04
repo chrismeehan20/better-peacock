@@ -14,6 +14,11 @@ export const defaultAmountToDarkenLighten = 10;
 
 export const defaultSaturation = 0.5;
 
+// Percent of the workspace color laid over the side bar and tab strip.
+// Low enough that the theme's own foreground colors stay readable,
+// high enough to read as a distinct window in Mission Control.
+export const defaultSideBarTintIntensity = 30;
+
 export const azureBlue = '#007fff';
 export const peacockGreen = '#42b883';
 

@@ -18,6 +18,7 @@ import {
   IElementColors,
   ForegroundColors,
   defaultAmountToDarkenLighten,
+  defaultSideBarTintIntensity,
   ColorSource,
   IEnvironmentGuardrail,
 } from '../models';
@@ -29,6 +30,7 @@ import {
   getForegroundColorHex,
   getInactiveBackgroundColorHex,
   getInactiveForegroundColorHex,
+  getTintedColorHex,
 } from '../color-library';
 import { LiveShareSettings } from '../live-share';
 import { sortSettingsIndexer } from '../object-library';
@@ -136,6 +138,13 @@ export function getProjectIconPaletteStrategy() {
   );
 }
 
+export function getSideBarTintIntensity() {
+  return readConfiguration<number>(
+    StandardSettings.SideBarTintIntensity,
+    defaultSideBarTintIntensity,
+  );
+}
+
 export function getColorCustomizationConfig() {
   // This currently gets the merged color customization set.
   // If we want to get just the ones from workspace,
@@ -209,11 +218,14 @@ export function prepareColors(backgroundHex: string) {
 
   const statusBarSettings = collectStatusBarSettings(backgroundHex, keepForegroundColor);
 
+  const sideBarSettings = collectSideBarSettings(backgroundHex);
+
   // Merge all color settings
   const mergedSettings: ISettingsIndexer = {
     ...activityBarSettings,
     ...titleBarSettings,
     ...statusBarSettings,
+    ...sideBarSettings,
     ...accentBorderSettings,
     ...squigglyBeGoneSettings,
   };
@@ -327,6 +339,7 @@ export function getAffectedElements() {
     titleBar: readConfiguration<boolean>(AffectedSettings.TitleBar) || false,
     editorGroupBorder: readConfiguration<boolean>(AffectedSettings.EditorGroupBorder) || false,
     panelBorder: readConfiguration<boolean>(AffectedSettings.PanelBorder) || false,
+    sideBar: readConfiguration<boolean>(AffectedSettings.SideBar) || false,
     sideBarBorder: readConfiguration<boolean>(AffectedSettings.SideBarBorder) || false,
     sashHover: readConfiguration<boolean>(AffectedSettings.SashHover) || false,
     statusAndTitleBorders:
@@ -504,6 +517,25 @@ function collectAccentBorderSettings(backgroundHex: string) {
   return accentBorderSettings;
 }
 
+function collectSideBarSettings(backgroundHex: string) {
+  const sideBarSettings = {} as ISettingsIndexer;
+
+  if (!isAffectedSettingSelected(AffectedSettings.SideBar)) {
+    return sideBarSettings;
+  }
+
+  // Use the same adjustment as the activity bar so the tint tracks the accent.
+  const { backgroundHex: color } = getElementStyle(backgroundHex, ElementNames.activityBar);
+  const tint = getTintedColorHex(color, getSideBarTintIntensity());
+
+  sideBarSettings[ColorSettings.sideBar_background] = tint;
+  sideBarSettings[ColorSettings.sideBarSectionHeader_background] = tint;
+  sideBarSettings[ColorSettings.sideBarTitle_background] = tint;
+  sideBarSettings[ColorSettings.editorGroupHeader_tabsBackground] = tint;
+
+  return sideBarSettings;
+}
+
 function collectSquigglyBeGoneSettings() {
   const squigglyBeGoneSettings = {} as ISettingsIndexer;
 
@@ -595,6 +627,7 @@ function getAllUserSettings() {
     titleBar: affectTitleBar,
     editorGroupBorder: affectEditorGroupBorder,
     panelBorder: affectPanelBorder,
+    sideBar: affectSideBar,
     sideBarBorder: affectSideBarBorder,
     sashHover: affectSashHover,
     tabActiveBorder: affectTabActiveBorder,
@@ -613,6 +646,7 @@ function getAllUserSettings() {
     affectTitleBar,
     affectEditorGroupBorder,
     affectPanelBorder,
+    affectSideBar,
     affectSideBarBorder,
     affectSashHover,
     affectTabActiveBorder,

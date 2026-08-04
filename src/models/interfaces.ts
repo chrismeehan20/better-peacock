@@ -47,6 +47,7 @@ export interface IPeacockAffectedElementSettings {
   titleBar: boolean;
   editorGroupBorder: boolean;
   panelBorder: boolean;
+  sideBar: boolean;
   sideBarBorder: boolean;
   sashHover: boolean;
   statusAndTitleBorders: boolean;

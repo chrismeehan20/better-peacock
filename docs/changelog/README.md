@@ -18,6 +18,7 @@ All notable changes to the code will be documented in this file.
 - Added an Agent Attention Queue view in the Explorer sidebar so agent state is visible without invoking a command
 - Added a Getting Started walkthrough that sequences hook installation, Codex trust, and verification
 - Added Agent Beacon hook-liveness detection and a Verify Agent Beacon Hooks command, so hooks that are installed but never fire are reported instead of appearing successful
+- Added `peacock.affectSideBar` (on by default) and `peacock.sideBarTintIntensity`, which tint the side bar, its section headers and title, and the tab strip with the workspace color. VS Code 1.131 ships `workbench.experimental.modernUI` as an auto-enrolled experiment, and its shell ignores or remaps `titleBar.*`, `statusBar.*`, and `activityBar.*` — so Peacock writes correct colors that never render. These background-adjacent tokens still paint under modernUI and carry workspace identity in Mission Control. The tint is applied at partial alpha so one value composites correctly over both light and dark themes. Setting `"workbench.experimental.modernUI": false` remains the way to get the original surfaces back; this is the fallback for when that opt-out goes away. Upstream tracks the incompatibility at [johnpapa/vscode-peacock#652](https://github.com/johnpapa/vscode-peacock/issues/652) but ships no workaround.
 
 ### Fixes
 

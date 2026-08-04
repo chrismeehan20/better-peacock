@@ -8,6 +8,7 @@ import {
   ColorAdjustmentOptions,
   defaultAmountToDarkenLighten,
   defaultSaturation,
+  defaultSideBarTintIntensity,
 } from './models';
 import {
   getColorCustomizationConfigFromWorkspace,
@@ -27,6 +28,21 @@ export function getInactiveBackgroundColorHex(backgroundColor = '') {
   const background = tinycolor(backgroundColor);
   background.setAlpha(inactiveElementAlpha);
   return formatHex(background);
+}
+
+export function getTintedColorHex(
+  backgroundColor = '',
+  intensityPercentage = defaultSideBarTintIntensity,
+) {
+  /**
+   * Returns the color at partial alpha so VS Code composites it over whatever
+   * the active theme paints underneath. That keeps one value correct for both
+   * light and dark themes without having to read the theme's own colors.
+   */
+  const clamped = Math.min(Math.max(intensityPercentage, 0), 100);
+  const tint = tinycolor(backgroundColor);
+  tint.setAlpha(clamped / 100);
+  return formatHex(tint);
 }
 
 export function getBackgroundHoverColorHex(backgroundColor = '') {

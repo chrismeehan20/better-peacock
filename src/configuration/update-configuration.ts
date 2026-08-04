@@ -150,6 +150,7 @@ export async function updateAffectedElements(values: IPeacockAffectedElementSett
   await updateGlobalConfiguration(AffectedSettings.TitleBar, values.titleBar);
   await updateGlobalConfiguration(AffectedSettings.EditorGroupBorder, values.editorGroupBorder);
   await updateGlobalConfiguration(AffectedSettings.PanelBorder, values.panelBorder);
+  await updateGlobalConfiguration(AffectedSettings.SideBar, values.sideBar);
   await updateGlobalConfiguration(AffectedSettings.SideBarBorder, values.sideBarBorder);
   await updateGlobalConfiguration(AffectedSettings.SashHover, values.sashHover);
   await updateGlobalConfiguration(

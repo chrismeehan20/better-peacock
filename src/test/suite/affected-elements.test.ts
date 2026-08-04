@@ -278,6 +278,7 @@ suite('Affected elements', () => {
         tabActiveBorder: true,
         editorGroupBorder: true,
         panelBorder: true,
+        sideBar: true,
         sideBarBorder: true,
         sashHover: true,
         statusAndTitleBorders: false,

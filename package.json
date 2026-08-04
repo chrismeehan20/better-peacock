@@ -2,7 +2,7 @@
   "name": "better-peacock",
   "displayName": "Better Peacock",
   "description": "Automatically color-code VS Code workspaces by project, repository, and branch so every window is easy to identify.",
-  "version": "4.2.5",
+  "version": "4.3.0",
   "publisher": "chrismeehan20",
   "license": "SEE LICENSE IN LICENSE.md",
   "repository": {
@@ -412,6 +412,18 @@
           "type": "boolean",
           "default": false,
           "description": "Specifies whether Peacock should affect the panel border."
+        },
+        "peacock.affectSideBar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Specifies whether Peacock should tint the side bar and tab strip. These are the only large surfaces VS Code's modernUI shell still colors, so leave this on if your title bar, activity bar, and status bar have stopped picking up the workspace color."
+        },
+        "peacock.sideBarTintIntensity": {
+          "type": "number",
+          "default": 30,
+          "minimum": 0,
+          "maximum": 100,
+          "description": "How strongly the workspace color tints the side bar and tab strip, as a percentage. Higher is easier to tell apart in Mission Control; lower is easier on the eyes. Ignored when peacock.affectSideBar is off."
         },
         "peacock.affectSideBarBorder": {
           "type": "boolean",

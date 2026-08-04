@@ -27,6 +27,7 @@ export enum StandardSettings {
   ProjectIconSearchPatterns = 'projectIconSearchPatterns',
   RemoteColor = 'remoteColor',
   ShowColorInStatusBar = 'showColorInStatusBar',
+  SideBarTintIntensity = 'sideBarTintIntensity',
   SquigglyBeGone = 'squigglyBeGone',
   SurpriseMeFromFavoritesOnly = 'surpriseMeFromFavoritesOnly',
   SurpriseMeOnStartup = 'surpriseMeOnStartup',
@@ -35,6 +36,7 @@ export enum StandardSettings {
 export enum AffectedSettings {
   EditorGroupBorder = 'affectEditorGroupBorder',
   PanelBorder = 'affectPanelBorder',
+  SideBar = 'affectSideBar',
   SideBarBorder = 'affectSideBarBorder',
   SashHover = 'affectSashHover',
   ActivityBar = 'affectActivityBar',
@@ -88,6 +90,16 @@ export enum ColorSettings {
   editorGroupBorder = 'editorGroup.border',
   panelBorder = 'panel.border',
   sideBarBorder = 'sideBar.border',
+  /**
+   * Background-adjacent tokens. VS Code's modernUI shell ignores or remaps
+   * titleBar.*, statusBar.*, and activityBar.*, so these carry the workspace
+   * color when modernUI is on. They tint rather than fill, so the theme's own
+   * foreground colors stay readable.
+   */
+  sideBar_background = 'sideBar.background',
+  sideBarSectionHeader_background = 'sideBarSectionHeader.background',
+  sideBarTitle_background = 'sideBarTitle.background',
+  editorGroupHeader_tabsBackground = 'editorGroupHeader.tabsBackground',
   sashHover = 'sash.hoverBorder',
   squigglyBeGone_error = 'editorError.foreground',
   squigglyBeGone_warning = 'editorWarning.foreground',
